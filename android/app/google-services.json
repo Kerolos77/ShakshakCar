@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "26429227157",
+    "project_id": "shakshak-2b25d",
+    "storage_bucket": "shakshak-2b25d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:26429227157:android:4c64c6d63aee7f5dca9b9c",
+        "android_client_info": {
+          "package_name": "com.example.shakshak"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhVxpxMQvyzkWc2hO8CAsJy6EoOA1qXHE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
