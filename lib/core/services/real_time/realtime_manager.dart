@@ -4,7 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import 'package:shakshak/core/constants/app_const.dart';
 import 'package:shakshak/core/network/local/cache_helper.dart';
@@ -32,13 +32,15 @@ class RealtimeManager {
   factory RealtimeManager() => _instance;
   RealtimeManager._internal();
 
-  final PusherChannelsFlutter _pusher = PusherChannelsFlutter.getInstance();
+  WebSocketChannel? _channel;
   RealtimeConnectionStatus _status = RealtimeConnectionStatus.disconnected;
-  String? _url; // We'll keep url param for backward compatibility, but we might parse it
+  String? _url;
+  String? _socketId;
+  bool _isManualDisconnect = false;
+  bool _isReconnecting = false;
 
   final Set<String> _activeSubscribes = {};
   final List<RealtimeSubscription> _subscriptions = [];
-  bool _isManualDisconnect = false;
 
   final ValueNotifier<RealtimeConnectionStatus> connectionStatus =
       ValueNotifier(RealtimeConnectionStatus.disconnected);
@@ -58,35 +60,46 @@ class RealtimeManager {
     _updateStatus(RealtimeConnectionStatus.connecting);
 
     try {
-      // Parse host and port from URL (if it's something like ws://shakshak.net:6001)
-      // We will fallback to defaults if parsing fails
-      final uri = Uri.tryParse(url);
-      final String host = uri?.host ?? 'shakshak.net';
-      final int port = uri?.port ?? 6001;
-      final bool useTLS = uri?.scheme == 'wss' || uri?.scheme == 'https';
+      _channel?.sink.close();
+      _channel = WebSocketChannel.connect(Uri.parse(url));
 
-      await _pusher.init(
-        apiKey: "shakshak_key", // Since this is custom Reverb, key can be arbitrary if not enforced
-        cluster: "mt1",
-        wsHost: host,
-        wsPort: port,
-        wssPort: port,
-        useTLS: useTLS,
-        onConnectionStateChange: _onConnectionStateChange,
-        onError: _onError,
-        onSubscriptionSucceeded: _onSubscriptionSucceeded,
-        onEvent: _onEvent,
-        onAuthorizer: _onAuthorizer,
+      _channel!.stream.listen(
+        (message) {
+          debugPrint('📥 RAW WebSocket Message: $message');
+          _handleMessage(message);
+        },
+        onError: (error) {
+          debugPrint('❌ RealtimeManager WebSocket Error: $error');
+          _scheduleReconnect();
+        },
+        onDone: () {
+          debugPrint('🔌 RealtimeManager WebSocket Closed');
+          _scheduleReconnect();
+        },
       );
-
-      await _pusher.connect();
     } catch (e) {
       debugPrint('❌ RealtimeManager Connection Exception: $e');
-      _updateStatus(RealtimeConnectionStatus.disconnected);
+      _scheduleReconnect();
     }
   }
 
-  Future<dynamic> _onAuthorizer(String channelName, String socketId, dynamic options) async {
+  void _scheduleReconnect() {
+    _updateStatus(RealtimeConnectionStatus.disconnected);
+    if (_isManualDisconnect || _isReconnecting) return;
+
+    _isReconnecting = true;
+    Future.delayed(const Duration(seconds: 3), () {
+      if (!_isManualDisconnect && _url != null) {
+        debugPrint('🔄 RealtimeManager Reconnecting...');
+        _isReconnecting = false;
+        connect(url: _url!);
+      } else {
+        _isReconnecting = false;
+      }
+    });
+  }
+
+  Future<Map<String, dynamic>> _authenticateChannel(String channelName) async {
     try {
       String? token = CacheHelper.getData(key: AppConstant.kToken);
       
@@ -98,15 +111,15 @@ class RealtimeManager {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-          "socket_id": socketId,
+          "socket_id": _socketId,
           "channel_name": channelName,
         }),
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        return jsonDecode(response.body) as Map<String, dynamic>;
       } else {
-        debugPrint("Auth Error: ${response.body}");
+        debugPrint("Auth Error Response: ${response.body}");
         throw Exception("Authentication Failed");
       }
     } catch (e) {
@@ -115,43 +128,44 @@ class RealtimeManager {
     }
   }
 
-  void _onConnectionStateChange(dynamic currentState, dynamic previousState) {
-    debugPrint("🌐 Pusher Connection State: $currentState");
-    if (currentState == 'CONNECTED') {
-      _updateStatus(RealtimeConnectionStatus.connected);
-      _resubscribeAll();
-    } else if (currentState == 'DISCONNECTED') {
-      if (!_isManualDisconnect) {
-        _updateStatus(RealtimeConnectionStatus.disconnected);
-      }
-    } else if (currentState == 'CONNECTING') {
-      _updateStatus(RealtimeConnectionStatus.connecting);
-    }
-  }
-
-  void _onError(String message, int? code, dynamic e) {
-    debugPrint("❌ Pusher Error: $message code: $code exception: $e");
-  }
-
-  void _onSubscriptionSucceeded(String channelName, dynamic data) {
-    debugPrint("✅ Subscribed successfully to: $channelName");
-  }
-
-  /// ================= HANDLERS =================
-  void _onEvent(PusherEvent event) {
-    debugPrint('📥 RealtimeManager Received Event: ${event.eventName} on channel: ${event.channelName}');
+  /// ================= MESSAGE HANDLER =================
+  void _handleMessage(dynamic message) {
     try {
-      if (event.eventName.startsWith('pusher:')) return;
+      final decoded = jsonDecode(message);
+      final String? event = decoded['event'];
+      final String? channel = decoded['channel'];
+      final dynamic data = decoded['data'];
 
-      final dynamic data = event.data;
+      if (event == null) return;
+
+      // Handle Ping/Pong
+      if (event == 'pusher:ping') {
+        _send({"event": "pusher:pong"});
+        return;
+      }
+
+      // Handle Connection Established
+      if (event == 'pusher:connection_established') {
+        final Map<String, dynamic> connectionData = data is String 
+            ? jsonDecode(data) 
+            : data;
+        _socketId = connectionData['socket_id'];
+        _updateStatus(RealtimeConnectionStatus.connected);
+        _resubscribeAll();
+        return;
+      }
+
+      // Ignore standard pusher events
+      if (event.startsWith('pusher:')) return;
+
       final parsedData = (data is String) ? jsonDecode(data) : data;
 
       final targets = _subscriptions
           .where((s) =>
-              s.channel == event.channelName &&
-              (s.event == event.eventName ||
-                  ".${s.event}" == event.eventName ||
-                  s.event == ".${event.eventName}"))
+              s.channel == channel &&
+              (s.event == event ||
+                  ".${s.event}" == event ||
+                  s.event == ".$event"))
           .toList();
 
       for (var sub in targets) {
@@ -159,6 +173,14 @@ class RealtimeManager {
       }
     } catch (e) {
       debugPrint('❌ RealtimeManager Parse Error: $e');
+    }
+  }
+
+  void _send(Map<String, dynamic> data) {
+    try {
+      _channel?.sink.add(jsonEncode(data));
+    } catch (e) {
+      debugPrint('❌ RealtimeManager Send Error: $e');
     }
   }
 
@@ -176,7 +198,19 @@ class RealtimeManager {
   Future<void> _rawSubscribe(String channel) async {
     debugPrint('📡 RealtimeManager: Subscribing to $channel');
     try {
-      await _pusher.subscribe(channelName: channel);
+      String? auth;
+      if (channel.startsWith('private-') || channel.startsWith('presence-')) {
+        final authData = await _authenticateChannel(channel);
+        auth = authData['auth'];
+      }
+
+      _send({
+        "event": "pusher:subscribe",
+        "data": {
+          "channel": channel,
+          if (auth != null) "auth": auth,
+        }
+      });
     } catch (e) {
       debugPrint('❌ RealtimeManager Subscribe Error: $e');
     }
@@ -220,7 +254,10 @@ class RealtimeManager {
 
     if (_status == RealtimeConnectionStatus.connected) {
       try {
-        await _pusher.unsubscribe(channelName: channel);
+        _send({
+          "event": "pusher:unsubscribe",
+          "data": {"channel": channel}
+        });
       } catch (e) {
         debugPrint('❌ RealtimeManager Unsubscribe Error: $e');
       }
@@ -233,7 +270,8 @@ class RealtimeManager {
     _subscriptions.clear();
     _updateStatus(RealtimeConnectionStatus.disconnected);
     try {
-      await _pusher.disconnect();
+      _channel?.sink.close();
+      _channel = null;
     } catch (e) {
       debugPrint('❌ RealtimeManager Disconnect Error: $e');
     }

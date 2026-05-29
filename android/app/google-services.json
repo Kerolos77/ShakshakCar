@@ -12,7 +12,12 @@
           "package_name": "com.example.shakshak"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "26429227157-0op0edqd81si7hsd83m9oo0ulla4act6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBhVxpxMQvyzkWc2hO8CAsJy6EoOA1qXHE"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "26429227157-0op0edqd81si7hsd83m9oo0ulla4act6.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "26429227157-u1ig0ovl7focaoo997t3nm9o19p14168.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.shakshak"
+              }
+            }
+          ]
         }
       }
     }

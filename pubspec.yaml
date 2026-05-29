@@ -62,7 +62,7 @@ dependencies:
   equatable: ^2.0.8
   marquee: ^2.3.0
   fl_chart: ^0.71.0
-  pusher_channels_flutter: ^2.4.0
+  web_socket_channel: ^3.0.3
 
 
 dev_dependencies:
@@ -82,6 +82,8 @@ flutter:
     - assets/models/
     - assets/fonts/
     - assets/sounds/
+    - assets/svg/
+    - assets/map_styles/
 
   fonts:
     - family: Cairo
