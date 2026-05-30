@@ -1,0 +1,32 @@
+info:
+  name: update-national-id
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{url}}/user/profile/update"
+  body:
+    type: multipart-form
+    data:
+      - name: national_id
+        type: text
+        value: "29901011234567"
+      - name: national_id_front
+        type: file
+        value: []
+      - name: national_id_back
+        type: file
+        value: []
+      - name: national_id_selfie
+        type: file
+        value: []
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

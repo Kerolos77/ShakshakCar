@@ -1,0 +1,20 @@
+info:
+  name: verify pickup otp
+  type: http
+  seq: 25
+
+http:
+  method: POST
+  url: "{{url}}/order/{{order_id}}/verify-pickup-otp"
+  body:
+    type: json
+    json: "{\n  \"pickup_otp\": \"1234\"\n}"
+  auth:
+    type: bearer
+    token: "{{tokenDriver}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

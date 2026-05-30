@@ -1,0 +1,17 @@
+info:
+  name: driver arrive receiver
+  type: http
+  seq: 26
+
+http:
+  method: POST
+  url: "{{url}}/order/{{order_id}}/driver-arrive-receiver"
+  auth:
+    type: bearer
+    token: "{{tokenDriver}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

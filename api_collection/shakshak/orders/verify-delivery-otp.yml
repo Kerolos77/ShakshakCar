@@ -1,0 +1,20 @@
+info:
+  name: verify delivery otp
+  type: http
+  seq: 27
+
+http:
+  method: POST
+  url: "{{url}}/order/{{order_id}}/verify-delivery-otp"
+  body:
+    type: json
+    json: "{\n  \"delivery_otp\": \"5678\"\n}"
+  auth:
+    type: bearer
+    token: "{{tokenDriver}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
