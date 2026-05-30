@@ -1,0 +1,18 @@
+info:
+  name: trip offers
+  type: websocket
+  seq: 2
+
+websocket:
+  url: "{{real_time_url}}"
+  message:
+    type: json
+    data: |-
+      {"event":"pusher:subscribe","data":{
+          "channel":"trip-offers-970"
+          }}
+  auth: inherit
+
+settings:
+  timeout: 0
+  keepAliveInterval: 0

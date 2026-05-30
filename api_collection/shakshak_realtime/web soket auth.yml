@@ -1,0 +1,24 @@
+info:
+  name: web soket auth
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: https://shakshak.net/api/broadcasting/auth
+  body:
+    type: json
+    data: |-
+      {
+          "socket_id": "210709736.906664197",
+          "channel_name": "private-driver.69"
+      }
+  auth:
+    type: bearer
+    token: "{{driver_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

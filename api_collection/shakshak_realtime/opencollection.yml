@@ -1,0 +1,28 @@
+opencollection: 1.0.0
+
+info:
+  name: shakshak_realtime
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: real_time_url
+      value: wss://shakshak.net:443/app/key?protocol=7&client=js&version=4.3.1&flash=false
+    - name: driver_token
+      value: 310|vTRrTh1MvavWXrL01Gd27D5XcVNQ6Hm4FrZgz4Zab5d52e44
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

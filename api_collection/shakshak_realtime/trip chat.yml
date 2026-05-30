@@ -1,0 +1,19 @@
+info:
+  name: trip chat
+  type: websocket
+  seq: 3
+
+websocket:
+  url: "{{real_time_url}}"
+  message:
+    type: json
+    data: |-
+      {"event":"pusher:subscribe","data":{
+          "channel":"trip-889",
+          "event":".chat"
+          }}
+  auth: inherit
+
+settings:
+  timeout: 0
+  keepAliveInterval: 0
