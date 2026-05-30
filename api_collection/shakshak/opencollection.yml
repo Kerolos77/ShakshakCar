@@ -1,0 +1,33 @@
+opencollection: 1.0.0
+
+info:
+  name: shakshak
+config:
+  proxy:
+    inherit: true
+    config:
+      protocol: http
+      hostname: ""
+      port: ""
+      auth:
+        username: ""
+        password: ""
+      bypassProxy: ""
+
+request:
+  variables:
+    - name: url
+      value: http://127.0.0.1:8000/api/v1
+      disabled: true
+    - name: url
+      value: https://shakshak.net/api/v1
+    - name: tokenDriver
+      value: 313|ziXPDXbCxI9Klj85mY6caS75aHPiPGJPOAxcxfVs3944e802
+    - name: tokenUser
+      value: 312|5VrODMFe2HLfa7FTSHqvGQlJHDDscQ52H2SJJ4IY1d9bed63
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git

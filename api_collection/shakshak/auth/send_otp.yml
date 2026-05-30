@@ -1,0 +1,21 @@
+info:
+  name: send_otp
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{url}}/auth/send_otp"
+  body:
+    type: multipart-form
+    data:
+      - name: phone
+        type: text
+        value: "+201225536609"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

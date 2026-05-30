@@ -1,0 +1,33 @@
+info:
+  name: 1. Create Payment Intention (Save Card)
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{url}}/paymob/payment-intention"
+  headers:
+    - name: Authorization
+      value: Bearer {{token}}
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "amount": 100.00,
+          "save_card": true,
+          "first_name": "John",
+          "last_name": "Doe",
+          "email": "john@example.com",
+          "phone_number": "+201012345678"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: Initialize a payment process. Set 'save_card' to true to tokenize the card for future use.

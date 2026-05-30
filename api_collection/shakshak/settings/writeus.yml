@@ -1,0 +1,33 @@
+info:
+  name: writeus
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{url}}/write_us?email=sayed@gsv.com&description=wjdn"
+  params:
+    - name: email
+      value: sayed@gsv.com
+      type: query
+    - name: description
+      value: wjdn
+      type: query
+  body:
+    type: multipart-form
+    data:
+      - name: email
+        type: text
+        value: sayed@gmail.com
+      - name: description
+        type: text
+        value: wegwge
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

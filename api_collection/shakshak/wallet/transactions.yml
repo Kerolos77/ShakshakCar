@@ -1,0 +1,17 @@
+info:
+  name: transactions
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{url}}/user/transactions"
+  auth:
+    type: bearer
+    token: "{{tokenDriver}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

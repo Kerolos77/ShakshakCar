@@ -1,0 +1,32 @@
+info:
+  name: 3. Pay with Saved Card
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{url}}/paymob/pay-with-saved-card"
+  headers:
+    - name: Authorization
+      value: Bearer {{token}}
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "saved_card_id": 1,
+          "amount": 50.00,
+          "order_id": 12345
+      }
+  auth:
+    type: bearer
+    token: 250|L2jHySWoHzKsNHbf2kw1TInVTLamiWvY8JIKbAUHd6b392f8
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: Execute a payment using a previously saved card token.

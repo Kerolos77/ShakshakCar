@@ -1,0 +1,21 @@
+info:
+  name: city
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{url}}/user/city/2"
+  body:
+    type: multipart-form
+    data:
+      - name: phone
+        type: text
+        value: "01099076093"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

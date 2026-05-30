@@ -1,0 +1,22 @@
+info:
+  name: 3. User Accepts Counter Offer
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{url}}/order/offer/918/accept"
+  headers:
+    - name: Accept
+      value: application/json
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: User accepts the driver's counter-offer. Takes offer_id in URL.

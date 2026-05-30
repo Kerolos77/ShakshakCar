@@ -1,0 +1,36 @@
+info:
+  name: info
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{url}}/wallet/info"
+  body:
+    type: multipart-form
+    data:
+      - name: name
+        type: text
+        value: sayed
+      - name: email
+        type: text
+        value: elgoharysayed410@gmail.com
+      - name: phone
+        type: text
+        value: "01225536606"
+      - name: fcm_token
+        type: text
+        value: ""
+      - name: country_id
+        type: text
+        value: "1"
+      - name: city_id
+        type: text
+        value: "1"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,26 @@
+info:
+  name: nearby
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: "{{url}}/location/nearby?latitude=30.1393633&longitude=31.3262299"
+  params:
+    - name: latitude
+      value: "30.1393633"
+      type: query
+    - name: longitude
+      value: "31.3262299"
+      type: query
+  body:
+    type: multipart-form
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

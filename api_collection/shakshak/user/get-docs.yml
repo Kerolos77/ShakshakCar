@@ -1,0 +1,17 @@
+info:
+  name: get-docs
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{url}}/user/get-docs"
+  auth:
+    type: bearer
+    token: 187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

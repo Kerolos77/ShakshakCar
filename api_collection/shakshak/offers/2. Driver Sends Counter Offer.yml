@@ -1,0 +1,29 @@
+info:
+  name: 2. Driver Sends Counter Offer
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{url}}/order/offer/driver-counter"
+  headers:
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "order_id": 915,
+          "offer_rate": 499.00
+      }
+  auth:
+    type: bearer
+    token: "{{tokenDriver}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: Driver suggests a different price (counter-offer) for the order.

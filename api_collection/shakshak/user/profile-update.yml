@@ -1,0 +1,36 @@
+info:
+  name: profile/update
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{url}}/user/profile/update"
+  body:
+    type: multipart-form
+    data:
+      - name: name
+        type: text
+        value: faiegg
+      - name: email
+        type: text
+        value: m@m.com
+      - name: country_id
+        type: text
+        value: "8"
+      - name: city_id
+        type: text
+        value: "82"
+      - name: image
+        type: file
+        value:
+          - postman-cloud:///1f07790f-da6d-4310-b1bd-6c99aaae94dd
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

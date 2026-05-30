@@ -1,0 +1,46 @@
+info:
+  name: 6. Webhook
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{url}}/paymob/webhook?hmac=..."
+  headers:
+    - name: Content-Type
+      value: application/json
+  params:
+    - name: hmac
+      value: ...
+      type: query
+  body:
+    type: json
+    data: |-
+      {
+          "obj": {
+              "id": 123456,
+              "success": true,
+              "amount_cents": 10000,
+              "order": {
+                  "id": 987654
+              },
+              "source_data": {
+                  "type": "card",
+                  "pan": "2346",
+                  "sub_type": "VISA",
+                  "token": "tkn_123abc..."
+              }
+          },
+          "hmac": "calculated_hmac_signature"
+      }
+  auth:
+    type: bearer
+    token: 250|L2jHySWoHzKsNHbf2kw1TInVTLamiWvY8JIKbAUHd6b392f8
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: Public webhook endpoint called by Paymob. Not for mobile app use.

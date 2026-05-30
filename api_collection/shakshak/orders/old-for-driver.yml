@@ -1,0 +1,59 @@
+info:
+  name: old-for-driver
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{url}}/order/old-for-driver"
+  body:
+    type: multipart-form
+    data:
+      - name: service_id
+        type: text
+        value: "1"
+      - name: distance
+        type: text
+        value: "14"
+      - name: destination_address
+        type: text
+        value: Airport Terminal 1
+      - name: destination_lat
+        type: text
+        value: "24.9534"
+      - name: destination_long
+        type: text
+        value: "24.9534"
+      - name: source_address
+        type: text
+        value: Royal Hotel
+      - name: source_lat
+        type: text
+        value: "24.7136"
+      - name: source_long
+        type: text
+        value: "46.6753"
+      - name: offer_rate
+        type: text
+        value: "120"
+      - name: inter_city
+        type: text
+        value: "true"
+      - name: payment_type
+        type: text
+        value: card
+      - name: when_date
+        type: text
+        value: 2023-12-25 08:00:00
+      - name: number_of_passenger
+        type: text
+        value: "2"
+  auth:
+    type: bearer
+    token: "{{tokenDriver}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

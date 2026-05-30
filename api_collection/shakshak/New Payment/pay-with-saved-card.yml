@@ -1,0 +1,26 @@
+info:
+  name: pay-with-saved-card
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{url}}/paymob/pay-with-saved-card"
+  body:
+    type: multipart-form
+    data:
+      - name: saved_card_id
+        type: text
+        value: "7"
+      - name: amount
+        type: text
+        value: "300"
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

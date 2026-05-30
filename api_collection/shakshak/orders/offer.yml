@@ -1,0 +1,17 @@
+info:
+  name: offer
+  type: http
+  seq: 10
+
+http:
+  method: GET
+  url: "{{url}}/order/offer/741/150"
+  auth:
+    type: bearer
+    token: "{{tokenDriver}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

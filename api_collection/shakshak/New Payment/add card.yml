@@ -1,0 +1,17 @@
+info:
+  name: add card
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{url}}/paymob/add-card"
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
