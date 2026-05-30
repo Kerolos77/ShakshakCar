@@ -1,0 +1,22 @@
+info:
+  name: 5. Delete Saved Card
+  type: http
+  seq: 6
+
+http:
+  method: DELETE
+  url: "{{url}}/paymob/saved-cards/1"
+  headers:
+    - name: Authorization
+      value: Bearer {{token}}
+  auth:
+    type: bearer
+    token: 250|L2jHySWoHzKsNHbf2kw1TInVTLamiWvY8JIKbAUHd6b392f8
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: Remove a saved card from the user's account.

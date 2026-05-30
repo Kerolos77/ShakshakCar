@@ -1,0 +1,28 @@
+info:
+  name: 1. Driver Accepts User Price
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{url}}/order/offer/driver-accept-user-price"
+  headers:
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "order_id": 123
+      }
+  auth:
+    type: bearer
+    token: 250|ncAAdIOt6sjKfpo0ehTv6m5QRVQA8WnkE7XhDpY83c238bda
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+docs: Driver accepts the initial price set by the user when creating the order.

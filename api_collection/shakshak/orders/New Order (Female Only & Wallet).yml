@@ -1,0 +1,49 @@
+info:
+  name: New Order (Female Only & Wallet)
+  type: http
+  seq: 16
+
+http:
+  method: POST
+  url: "{{url}}/api/v1/order/new"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Authorization
+      value: Bearer {{token}}
+  body:
+    type: multipart-form
+    data:
+      - name: service_id
+        type: text
+        value: "1"
+      - name: payment_type
+        type: text
+        value: wallet
+        description: wallet or cash
+      - name: is_female_only
+        type: text
+        value: "1"
+        description: 1 for true, 0 for false
+      - name: offer_rate
+        type: text
+        value: "50"
+      - name: distance
+        type: text
+        value: "10"
+      - name: source_address
+        type: text
+        value: Cairo
+      - name: destination_address
+        type: text
+        value: Giza
+      - name: inter_city
+        type: text
+        value: "0"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,26 @@
+info:
+  name: charge-wallet
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{url}}/paymob/charge-wallet"
+  body:
+    type: json
+    data: "{\r
+
+      \  \"amount\": 150.50,\r
+
+      \  \"save_card\": true\r
+
+      }"
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

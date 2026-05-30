@@ -1,0 +1,30 @@
+info:
+  name: Buy packages
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{url}}/packages/buy"
+  body:
+    type: json
+    data: "{\r
+
+      \  \"package_id\": 1,\r
+
+      \  \"payment_method\":\r
+
+      \   //\"points\" \r
+
+      \   \"cash\"\r
+
+      }"
+  auth:
+    type: bearer
+    token: "{{tokenDriver}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

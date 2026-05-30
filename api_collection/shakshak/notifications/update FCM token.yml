@@ -1,0 +1,24 @@
+info:
+  name: update FCM token
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{url}}/notifications/fcm-token"
+  body:
+    type: json
+    data: "{\r
+
+      \    \"fcm_token\": \"c-9yps0xS_mWnhrb1cb5KM:APA91bEHpdtstr-jvYu2uSa_LdA9Z3OZaSau_yG9yUks-HyjiL15mK6EWMTf4yhPzx_hSl7sSk__74JIQIgSB447-FmXW0ABFioEejTT7AI9_CbqKiC6CE\"\r
+
+      }"
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

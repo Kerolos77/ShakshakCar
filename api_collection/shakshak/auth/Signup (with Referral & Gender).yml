@@ -1,0 +1,44 @@
+info:
+  name: Signup (with Referral & Gender)
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{url}}/auth/signup"
+  headers:
+    - name: Accept
+      value: application/json
+  body:
+    type: multipart-form
+    data:
+      - name: name
+        type: text
+        value: Test User
+      - name: email
+        type: text
+        value: test112@example.com
+      - name: password
+        type: text
+        value: password
+      - name: phone_number
+        type: text
+        value: "01099076654"
+      - name: country_code
+        type: text
+        value: "+20"
+      - name: referral_code
+        type: text
+        value: ""
+        description: "Optional: Enter referrer code here"
+      - name: gender
+        type: text
+        value: male
+        description: male or female
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

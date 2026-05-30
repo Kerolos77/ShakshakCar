@@ -1,0 +1,17 @@
+info:
+  name: add-out-city-offer
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{url}}/order/add-out-city-offer/707/2"
+  auth:
+    type: bearer
+    token: 187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

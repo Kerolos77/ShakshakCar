@@ -1,0 +1,7 @@
+info:
+  name: notifications
+  type: folder
+  seq: 18
+
+request:
+  auth: inherit

@@ -1,0 +1,34 @@
+info:
+  name: change
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{url}}/payments/change/1"
+  params:
+    - name: id
+      value: "1"
+      type: query
+      disabled: true
+  body:
+    type: multipart-form
+    data:
+      - name: service_id
+        type: text
+        value: "4"
+      - name: destination
+        type: text
+        value: Cairo, Egypt
+      - name: origin
+        type: text
+        value: Cairo, Egypt
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

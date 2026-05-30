@@ -1,0 +1,28 @@
+info:
+  name: getprice
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{url}}/order/getprice"
+  body:
+    type: json
+    data: "{\r
+
+      \    \"service_id\": 7,\r
+
+      \    \"origin\": \"30.0444,31.2357\",\r
+
+      \    \"destination\": \"31.2001,29.9187\"\r
+
+      }\r\n"
+  auth:
+    type: bearer
+    token: 252|63PceJfBxkE0HHD3hwnJ0OEI2APMmPX9LVRVMVNIc45ac30f
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

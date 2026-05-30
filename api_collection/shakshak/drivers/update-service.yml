@@ -1,0 +1,100 @@
+info:
+  name: /update-service
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{url}}/driver/update-service?service_id=4"
+  headers:
+    - name: lang
+      value: ar
+  params:
+    - name: service_id
+      value: "4"
+      type: query
+  body:
+    type: multipart-form
+    data:
+      - name: criminal_record_image
+        type: file
+        value:
+          - postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f
+      - name: front_identity_image
+        type: file
+        value:
+          - postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f
+      - name: driver_image_with_id
+        type: file
+        value:
+          - postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f
+      - name: front_license_image
+        type: file
+        value:
+          - postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f
+      - name: back_license_image
+        type: file
+        value:
+          - postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f
+      - name: driver_with_license_image
+        type: file
+        value:
+          - postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f
+      - name: car_front_license_image
+        type: file
+        value:
+          - postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f
+      - name: car_back_license_image
+        type: file
+        value:
+          - postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f
+      - name: car_driver_with_license_image
+        type: file
+        value:
+          - postman-cloud:///1efa1580-f993-4eb0-a4dc-45439dad3f3f
+      - name: birth_date
+        type: text
+        value: 1990-01-01
+      - name: id_number
+        type: text
+        value: "2343"
+      - name: service_id
+        type: text
+        value: "4"
+      - name: car_brand_id
+        type: text
+        value: "1"
+      - name: car_model_id
+        type: text
+        value: "1"
+      - name: color
+        type: text
+        value: red
+      - name: release_year
+        type: text
+        value: "2018"
+      - name: criminal_expiry_date
+        type: text
+        value: 2025-12-31
+      - name: expiry_date
+        type: text
+        value: 2025-12-31
+      - name: car_expiry_date
+        type: text
+        value: 2025-12-31
+      - name: back_identity_image
+        type: file
+        value:
+          - /C:/Users/SH/Music/10931491.png
+      - name: license_expiry_date
+        type: text
+        value: 2025-12-31
+  auth:
+    type: bearer
+    token: 187|Es4deaaWcW2voTEUxlh4IEQ6yf4AMFrD3kaMq4Iw8636839b
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

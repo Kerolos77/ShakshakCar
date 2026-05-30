@@ -1,0 +1,17 @@
+info:
+  name: incity
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{url}}/services/incity"
+  auth:
+    type: bearer
+    token: 188|XExUMewnNcUAjnnPIdw0Tu3pL1wBcPiZzx5H0UUQ5c08b10c
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

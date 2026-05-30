@@ -1,0 +1,62 @@
+info:
+  name: new-order
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{url}}/order/new"
+  body:
+    type: multipart-form
+    data:
+      - name: service_id
+        type: text
+        value: "4"
+      - name: distance
+        type: text
+        value: "14"
+      - name: destination_address
+        type: text
+        value: Airport Terminal 1
+      - name: destination_lat
+        type: text
+        value: "30.091141"
+      - name: destination_long
+        type: text
+        value: "31.376596"
+      - name: source_address
+        type: text
+        value: Royal Hotel
+      - name: source_lat
+        type: text
+        value: "30.1390716"
+      - name: source_long
+        type: text
+        value: "31.3237531"
+      - name: offer_rate
+        type: text
+        value: "120"
+      - name: inter_city
+        type: text
+        value: "1"
+      - name: payment_type
+        type: text
+        value: card
+      - name: when_date
+        type: text
+        value: 2023-12-25 08:00:00
+      - name: number_of_passenger
+        type: text
+        value: "2"
+      - name: saved_card_id
+        type: text
+        value: "7"
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

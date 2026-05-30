@@ -1,0 +1,17 @@
+info:
+  name: notifications mark as read
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{url}}/notifications/{id}/read"
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

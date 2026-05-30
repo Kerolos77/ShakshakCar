@@ -1,0 +1,19 @@
+info:
+  name: wallet_transfer
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{url}}/wallet/transfer"
+  body:
+    type: multipart-form
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

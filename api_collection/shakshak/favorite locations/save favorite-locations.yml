@@ -1,0 +1,32 @@
+info:
+  name: save favorite-locations
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{url}}/user/favorite-locations"
+  body:
+    type: json
+    data: "{\r
+
+      \    \"label\": \"البيت\",        // اسم المكان (شغل، بيت، جيم...)\r
+
+      \    \"address\": \"عنوان التفصيلي هنا\",\r
+
+      \    \"latitude\": \"30.0444\",\r
+
+      \    \"longitude\": \"31.2357\",\r
+
+      \    \"is_default\": false     // (اختياري) تعيين كمكان افتراضي\r
+
+      }\r\n"
+  auth:
+    type: bearer
+    token: "{{tokenUser}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
