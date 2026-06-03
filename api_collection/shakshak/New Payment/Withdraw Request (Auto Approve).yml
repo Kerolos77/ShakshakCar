@@ -1,7 +1,7 @@
 info:
   name: Withdraw Request (Auto Approve)
   type: http
-  seq: 4
+  seq: 9
 
 http:
   method: GET
