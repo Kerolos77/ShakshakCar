@@ -208,6 +208,30 @@ class MapMarkerHelper {
     return descriptor;
   }
 
+  static Future<BitmapDescriptor> create3DCarMarkerBitmap() async {
+    const String cacheKey = 'car_3d';
+    if (_carMarkerCache.containsKey(cacheKey)) {
+      return _carMarkerCache[cacheKey]!;
+    }
+
+    final ByteData data = await rootBundle.load('assets/images/car_marker_3d.png');
+    final ui.Codec codec = await ui.instantiateImageCodec(
+      data.buffer.asUint8List(),
+      targetWidth: 100, // appropriate size for map marker
+    );
+    final ui.FrameInfo fi = await codec.getNextFrame();
+    final ui.Image image = fi.image;
+
+    final ByteData? byteData =
+        await image.toByteData(format: ui.ImageByteFormat.png);
+
+    final descriptor =
+        BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+
+    _carMarkerCache[cacheKey] = descriptor;
+    return descriptor;
+  }
+
   /// تحميل مسبق للأيقونات الشائعة في الذاكرة لمنع أي Flickering عند فتح الخرائط
   static Future<void> preloadCommonMarkers() async {
     // تحميل أيقونة البداية (دائرة خضراء)
@@ -217,5 +241,6 @@ class MapMarkerHelper {
     // تحميل أيقونة الدرايفر (سيارة وموتوسيكل)
     await createVehicleMarkerBitmap(isMotorcycle: false);
     await createVehicleMarkerBitmap(isMotorcycle: true);
+    await create3DCarMarkerBitmap();
   }
 }

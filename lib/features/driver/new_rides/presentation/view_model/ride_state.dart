@@ -28,6 +28,7 @@ class RideState {
   final double currentSpeed;
   final double currentBearing;
   final Set<int> verifiedTripOtps;
+  final bool isSimulationActive;
 
   RideState({
     required this.status,
@@ -45,12 +46,14 @@ class RideState {
     this.currentSpeed = 0.0,
     this.currentBearing = 0.0,
     this.verifiedTripOtps = const {},
+    this.isSimulationActive = false,
   });
 
   factory RideState.initial() => RideState(
         status: RideStatus.initial,
         actionStatus: RideActionStatus.initial,
         verifiedTripOtps: const {},
+        isSimulationActive: false,
       );
 
   RideState copyWith({
@@ -70,6 +73,7 @@ class RideState {
     double? currentSpeed,
     double? currentBearing,
     Set<int>? verifiedTripOtps,
+    bool? isSimulationActive,
   }) {
     return RideState(
       status: status ?? this.status,
@@ -88,6 +92,7 @@ class RideState {
       currentSpeed: currentSpeed ?? this.currentSpeed,
       currentBearing: currentBearing ?? this.currentBearing,
       verifiedTripOtps: verifiedTripOtps ?? this.verifiedTripOtps,
+      isSimulationActive: isSimulationActive ?? this.isSimulationActive,
     );
   }
 }

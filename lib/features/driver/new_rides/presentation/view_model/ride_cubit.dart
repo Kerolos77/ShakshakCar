@@ -19,6 +19,12 @@ import 'package:shakshak/features/driver/new_rides/domain/usecases/fetch_new_rid
 import 'package:shakshak/features/driver/new_rides/presentation/view_model/ride_state.dart';
 import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_data.dart';
 import 'package:shakshak/features/driver/new_rides/domain/usecases/reject_ride_usecase.dart';
+import 'dart:math' as math;
+import 'package:shakshak/core/services/google_maps_service.dart';
+import 'package:shakshak/core/network/dio_helper/dio_helper.dart';
+import 'package:shakshak/core/constants/api_const.dart';
+import 'package:shakshak/core/network/local/cache_helper.dart';
+import 'package:shakshak/core/constants/app_const.dart';
 import 'package:shakshak/core/services/location_service.dart';
 import 'package:shakshak/features/driver/new_rides/domain/repositories/new_ride_repo.dart';
 
@@ -41,6 +47,7 @@ class RideCubit extends Cubit<RideState> {
   String? _newRidesToken;
   final Map<int, String> _tripChannelTokens = {};
   StreamSubscription<loc.LocationData>? _locationSubscription;
+  Timer? _simulationTimer;
   final FetchNewRidesUseCase fetchNewRidesUseCase;
   final AcceptRideUseCase acceptRideUseCase;
   final CounterOfferUseCase counterOfferUseCase;
@@ -525,7 +532,7 @@ class RideCubit extends Cubit<RideState> {
       (fail) => emit(state.copyWith(
           actionStatus: RideActionStatus.error,
           actionOrderId: orderId,
-          message: fail.message ?? "رمز التحقق غير صحيح")),
+          message: fail.message)),
       (success) {
         if (success) {
           final updatedVerified = Set<int>.from(state.verifiedTripOtps)..add(orderId);
@@ -546,8 +553,127 @@ class RideCubit extends Cubit<RideState> {
     );
   }
 
+  Future<void> startSimulation(LatLng start, LatLng end) async {
+    stopSimulation();
+    _locationSubscription?.cancel();
+
+    emit(state.copyWith(isSimulationActive: true));
+    debugPrint("🤖 RideCubit: Starting route simulation from $start to $end");
+
+    // Fetch the route points
+    final mapsService = GoogleMapsService();
+    final route = await mapsService.fetchRoute(start: start, end: end);
+
+    List<LatLng> points = [];
+    if (route != null && route.polylinePoints.isNotEmpty) {
+      points = route.polylinePoints;
+    } else {
+      // Fallback: draw straight line points
+      points = _interpolatePoints(start, end, 20);
+    }
+
+    if (points.isEmpty) {
+      emit(state.copyWith(isSimulationActive: false));
+      return;
+    }
+
+    int currentIndex = 0;
+    double currentSpeed = 45.0;
+
+    _simulationTimer = Timer.periodic(const Duration(milliseconds: 1500), (timer) {
+      if (currentIndex >= points.length) {
+        // Loop back
+        currentIndex = 0;
+      }
+
+      final currentPoint = points[currentIndex];
+      LatLng? nextPoint;
+      if (currentIndex + 1 < points.length) {
+        nextPoint = points[currentIndex + 1];
+      }
+
+      double bearing = state.currentBearing;
+      if (nextPoint != null) {
+        bearing = _calculateBearing(currentPoint, nextPoint);
+      }
+
+      // Vary speed slightly to make it look realistic (between 40 and 60 km/h)
+      currentSpeed = 40.0 + (currentIndex % 5) * 4.0;
+
+      currentDriverLocation = currentPoint;
+
+      // Update location on server too
+      try {
+        final String? userToken = CacheHelper.getData(key: AppConstant.kToken);
+        final String tokenToUse = (userToken != null && userToken.isNotEmpty)
+            ? userToken
+            : "310|vTRrTh1MvavWXrL01Gd27D5XcVNQ6Hm4FrZgz4Zab5d52e44"; // default mock driver token from COMPACTION summary
+
+        DioHelper.postData(
+          url: ApiConstant.locationUpdateUrl,
+          token: tokenToUse,
+          query: {
+            'latitude': currentPoint.latitude,
+            'longitude': currentPoint.longitude,
+          },
+          data: {},
+        ).then((_) {
+          debugPrint("🤖 Simulation: Server location updated: ${currentPoint.latitude}, ${currentPoint.longitude}");
+        }).catchError((e) {
+          debugPrint("🤖 Simulation: Failed server update: $e");
+        });
+      } catch (e) {
+        debugPrint("Error updating simulator server location: $e");
+      }
+
+      emit(state.copyWith(
+        currentDriverLocation: currentPoint,
+        currentSpeed: currentSpeed,
+        currentBearing: bearing,
+      ));
+
+      currentIndex++;
+    });
+  }
+
+  void stopSimulation() {
+    _simulationTimer?.cancel();
+    _simulationTimer = null;
+    emit(state.copyWith(isSimulationActive: false));
+  }
+
+  List<LatLng> _interpolatePoints(LatLng start, LatLng end, int steps) {
+    List<LatLng> points = [];
+    for (int i = 0; i <= steps; i++) {
+      double t = i / steps;
+      double lat = start.latitude + (end.latitude - start.latitude) * t;
+      double lng = start.longitude + (end.longitude - start.longitude) * t;
+      points.add(LatLng(lat, lng));
+    }
+    return points;
+  }
+
+  double _calculateBearing(LatLng start, LatLng end) {
+    final double lat1 = start.latitude * (3.1415926535897932 / 180.0);
+    final double lon1 = start.longitude * (3.1415926535897932 / 180.0);
+    final double lat2 = end.latitude * (3.1415926535897932 / 180.0);
+    final double lon2 = end.longitude * (3.1415926535897932 / 180.0);
+
+    final double dLon = lon2 - lon1;
+
+    final double y = math.sin(dLon) * math.cos(lat2);
+    final double x = math.cos(lat1) * math.sin(lat2) -
+        math.sin(lat1) * math.cos(lat2) * math.cos(dLon);
+
+    final double radians = math.atan2(y, x);
+    final double degrees = radians * (180.0 / 3.1415926535897932);
+
+    return (degrees + 360.0) % 360.0;
+  }
+
   @override
   Future<void> close() {
+    _simulationTimer?.cancel();
     _locationSubscription?.cancel();
     if (_newRidesToken != null) {
       _realtimeService.removeListener(_newRidesToken!);
