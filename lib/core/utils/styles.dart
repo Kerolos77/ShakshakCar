@@ -50,6 +50,12 @@ class Styles {
         color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
       );
 
+  static TextStyle textStyle18Medium(BuildContext context) => TextStyle(
+        fontSize: 18.sp,
+        fontWeight: FontWeight.w300,
+        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+      );
+
   static TextStyle textStyle13SemiBold(BuildContext context) => TextStyle(
         fontSize: 13.sp,
         fontWeight: FontWeight.w600,

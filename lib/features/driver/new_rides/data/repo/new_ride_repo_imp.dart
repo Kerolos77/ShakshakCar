@@ -149,4 +149,107 @@ class NewRideRepoImp implements NewRideRepo {
       return left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, bool>> arriveRide(int orderId) async {
+    try {
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
+          ApiConstant.testDriverToken;
+
+      var response = await DioHelper.getData(
+        url: 'order/arrived/$orderId',
+        token: token,
+      );
+
+      return right(response.statusCode == 200);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> startRide(int orderId) async {
+    try {
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
+          ApiConstant.testDriverToken;
+
+      var response = await DioHelper.getData(
+        url: 'order/start/$orderId',
+        token: token,
+      );
+
+      return right(response.statusCode == 200);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> completeRide(int orderId) async {
+    try {
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
+          ApiConstant.testDriverToken;
+
+      var response = await DioHelper.getData(
+        url: 'order/end/$orderId',
+        token: token,
+      );
+
+      return right(response.statusCode == 200);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> cancelRide(int orderId) async {
+    try {
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
+          ApiConstant.testDriverToken;
+
+      var response = await DioHelper.getData(
+        url: 'order/cancel/$orderId',
+        token: token,
+      );
+
+      return right(response.statusCode == 200);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> verifyPickupOtp(int orderId, String otp) async {
+    try {
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
+          ApiConstant.testDriverToken;
+
+      var response = await DioHelper.postData(
+        url: 'order/$orderId/verify-pickup-otp',
+        token: token,
+        data: {
+          'pickup_otp': otp,
+        },
+      );
+
+      return right(response.statusCode == 200);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(e.toString()));
+    }
+  }
 }

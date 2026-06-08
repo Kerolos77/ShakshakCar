@@ -87,6 +87,8 @@ class NewRideDataEntity {
   final String? commission;
   final PaymentDetailsEntity? paymentDetails;
   final List<OfferEntity> offers;
+  final String? pickupOtp;
+  final String? deliveryOtp;
 
   NewRideDataEntity({
     required this.id,
@@ -125,5 +127,7 @@ class NewRideDataEntity {
     this.commission,
     this.paymentDetails,
     this.offers = const [],
+    this.pickupOtp,
+    this.deliveryOtp,
   });
 }

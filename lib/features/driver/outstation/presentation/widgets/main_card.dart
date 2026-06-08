@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:pinput/pinput.dart';
+import 'package:shakshak/core/resources/app_colors.dart';
 import 'package:shakshak/core/extentions/glopal_extentions.dart';
 import 'package:shakshak/features/driver/outstation/presentation/widgets/user_row.dart';
 
@@ -29,6 +31,9 @@ class MainCard extends StatelessWidget {
     required this.onPrimaryAction,
     required this.onDismiss,
     required this.onCancelOffer,
+    required this.isOtpVerified,
+    this.onCancelTrip,
+    this.onVerifyOtp,
     this.negotiationSettings,
     this.showDetailsButton = true,
     this.showDismissButton = true,
@@ -48,11 +53,21 @@ class MainCard extends StatelessWidget {
   final VoidCallback onPrimaryAction;
   final VoidCallback onDismiss;
   final VoidCallback onCancelOffer;
+  final VoidCallback? onCancelTrip;
+  final bool isOtpVerified;
+  final void Function(String otp)? onVerifyOtp;
 
   @override
   Widget build(BuildContext context) {
     final baseAmount = ride.amount.toDouble();
     final hasNewPrice = currentAmount != baseAmount;
+
+    final bool isTripActive = ride.status == 'accepted' ||
+        ride.status == 'assigned' ||
+        ride.status == 'driver_on_a_way' ||
+        ride.status == 'arrived' ||
+        ride.status == 'started' ||
+        ride.status == 'on_trip';
 
     // حالة القفل: لو في لودينج أو لو في عرض معلق فعلاً
     final bool isInteractionDisabled = isAnyActionLoading || isOfferPending;
@@ -124,7 +139,8 @@ class MainCard extends StatelessWidget {
                       12.ph,
 
                       // Bidding buttons
-                      if (negotiationSettings != null &&
+                      if (!isTripActive &&
+                          negotiationSettings != null &&
                           negotiationSettings!.data.isNotEmpty)
                         Padding(
                           padding: EdgeInsets.only(bottom: 12.h),
@@ -165,7 +181,7 @@ class MainCard extends StatelessWidget {
                         ),
 
                       // Reset to Original Price Button
-                      if (hasNewPrice && !isInteractionDisabled)
+                      if (!isTripActive && hasNewPrice && !isInteractionDisabled)
                         Padding(
                           padding: EdgeInsets.only(bottom: 12.h),
                           child: Center(
@@ -203,24 +219,138 @@ class MainCard extends StatelessWidget {
                           ),
                         ),
 
-                      // Primary button
-                      CustomButton(
-                        text: isOfferPending
-                            ? "إلغاء العرض"
-                            : (hasNewPrice
-                                ? S.of(context).raiseFare
-                                : S.of(context).accept),
-                        onTap: isAnyActionLoading
-                            ? null
-                            : (isOfferPending
-                                ? onCancelOffer
-                                : onPrimaryAction),
-                        buttonColor: isOfferPending
-                            ? Colors.red.withOpacity(0.8)
-                            : Styles.getPrimaryColor(context),
-                        height: 55.h,
-                        borderRadius: 12.r,
-                      ),
+                      // OTP input field if status is arrived
+                      if (ride.status == 'arrived') ...[
+                        10.ph,
+                        if (!isOtpVerified) ...[
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              "أدخل رمز التحقق (OTP) لبدء الرحلة:${ride.pickupOtp != null && ride.pickupOtp!.isNotEmpty ? ' (رمز الفحص: ${ride.pickupOtp})' : ''}",
+                              style: Styles.textStyle14SemiBold(context).copyWith(
+                                color: Styles.getPrimaryColor(context),
+                              ),
+                            ),
+                          ),
+                          10.ph,
+                          Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: Center(
+                              child: Pinput(
+                                length: 4,
+                                autofillHints: const [AutofillHints.oneTimeCode],
+                                defaultPinTheme: PinTheme(
+                                  width: 40.w,
+                                  height: 46.h,
+                                  textStyle: Styles.textStyle18Medium(context).copyWith(
+                                    color: Styles.getPrimaryColor(context),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.3)),
+                                  ),
+                                ),
+                                focusedPinTheme: PinTheme(
+                                  width: 40.w,
+                                  height: 46.h,
+                                  textStyle: Styles.textStyle18Medium(context).copyWith(
+                                    color: Styles.getPrimaryColor(context),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    border: Border.all(color: Styles.getPrimaryColor(context), width: 1.5),
+                                  ),
+                                ),
+                                onCompleted: (pin) {
+                                  if (onVerifyOtp != null) {
+                                    onVerifyOtp!(pin);
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(color: Colors.green.withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.check_circle, color: Colors.green),
+                                10.pw,
+                                Text(
+                                  "تم التحقق من رمز العميل بنجاح",
+                                  style: Styles.textStyle14Bold(context).copyWith(color: Colors.green),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        12.ph,
+                      ],
+
+                      // Primary button / Active Trip Buttons
+                      if (isTripActive)
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: CustomButton(
+                                text: ride.status == 'accepted' ||
+                                        ride.status == 'assigned' ||
+                                        ride.status == 'driver_on_a_way'
+                                    ? "لقد وصلت"
+                                    : (ride.status == 'arrived'
+                                        ? S.of(context).startTrip
+                                        : S.of(context).endTrip),
+                                onTap: isAnyActionLoading
+                                    ? null
+                                    : (ride.status == 'arrived' && !isOtpVerified
+                                        ? null
+                                        : onPrimaryAction),
+                                buttonColor: (ride.status == 'arrived' && !isOtpVerified)
+                                    ? Theme.of(context).disabledColor
+                                    : Styles.getPrimaryColor(context),
+                                height: 55.h,
+                                borderRadius: 12.r,
+                              ),
+                            ),
+                            12.pw,
+                            Expanded(
+                              flex: 1,
+                              child: CustomButton(
+                                text: "إلغاء",
+                                onTap: isAnyActionLoading ? null : onCancelTrip,
+                                buttonColor: Colors.red.withOpacity(0.8),
+                                height: 55.h,
+                                borderRadius: 12.r,
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        CustomButton(
+                          text: isOfferPending
+                              ? "إلغاء العرض"
+                              : (hasNewPrice
+                                  ? S.of(context).raiseFare
+                                  : S.of(context).accept),
+                          onTap: isAnyActionLoading
+                              ? null
+                              : (isOfferPending
+                                  ? onCancelOffer
+                                  : onPrimaryAction),
+                          buttonColor: isOfferPending
+                              ? Colors.red.withOpacity(0.8)
+                              : Styles.getPrimaryColor(context),
+                          height: 55.h,
+                          borderRadius: 12.r,
+                        ),
                     ],
                   ),
                 ),

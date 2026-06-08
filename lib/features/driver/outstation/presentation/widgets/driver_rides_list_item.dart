@@ -1,8 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shakshak/features/driver/new_rides/presentation/view_model/ride_cubit.dart';
 import 'package:shakshak/features/driver/new_rides/presentation/view_model/ride_state.dart';
 import 'package:shakshak/features/user/user_home/domain/entities/new_ride_data_entity.dart';
+import 'package:shakshak/core/router/routes.dart';
+import 'package:shakshak/core/router/router_helper.dart';
+import 'package:shakshak/core/router/route_args.dart';
 
 import 'main_card.dart';
 
@@ -53,6 +56,16 @@ class _DriverRidesListItemState extends State<DriverRidesListItem> {
             state.actionOrderId == widget.ride.id) {
           if (_isWaiting) setState(() => _isWaiting = false);
         }
+
+        if (state.actionStatus == RideActionStatus.success &&
+            state.actionOrderId == widget.ride.id) {
+          debugPrint("🚀 RideCubit: Accept success for ride ${widget.ride.id}, navigating to trip map view.");
+          navigateTo(
+            context,
+            Routes.tripMapView,
+            extra: TripMapArgs(ride: widget.ride),
+          );
+        }
       },
       child: MainCard(
         ride: widget.ride,
@@ -76,11 +89,22 @@ class _DriverRidesListItemState extends State<DriverRidesListItem> {
         onPrimaryAction: () {
           if (isAnyActionLoading) return;
 
-          final base = widget.ride.amount.toDouble();
-          if (currentAmount == base) {
-            rideCubit.acceptRide(widget.ride.id);
+          final status = widget.ride.status;
+          if (status == 'accepted' ||
+              status == 'assigned' ||
+              status == 'driver_on_a_way') {
+            rideCubit.arriveRide(widget.ride.id);
+          } else if (status == 'arrived') {
+            rideCubit.startRide(widget.ride.id);
+          } else if (status == 'started' || status == 'on_trip') {
+            rideCubit.completeRide(widget.ride.id);
           } else {
-            rideCubit.counterOffer(widget.ride.id, currentAmount);
+            final base = widget.ride.amount.toDouble();
+            if (currentAmount == base) {
+              rideCubit.acceptRide(widget.ride.id);
+            } else {
+              rideCubit.counterOffer(widget.ride.id, currentAmount);
+            }
           }
         },
         onDismiss: () => rideCubit.dismissRide(widget.ride.id),
@@ -88,6 +112,13 @@ class _DriverRidesListItemState extends State<DriverRidesListItem> {
           // عند الإلغاء نرجع السعر لأصله في الـ state
           rideCubit.updateAmount(widget.ride.id, widget.ride.amount.toDouble());
           rideCubit.cancelOffer(widget.ride.id);
+        },
+        onCancelTrip: () {
+          rideCubit.cancelRide(widget.ride.id);
+        },
+        isOtpVerified: rideState.verifiedTripOtps.contains(widget.ride.id),
+        onVerifyOtp: (otp) {
+          rideCubit.verifyPickupOtp(widget.ride.id, otp);
         },
       ),
     );

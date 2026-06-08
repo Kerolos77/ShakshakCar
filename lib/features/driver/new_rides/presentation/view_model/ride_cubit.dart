@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -17,9 +18,9 @@ import 'package:shakshak/core/services/user_storage_service.dart';
 import 'package:shakshak/features/driver/new_rides/domain/usecases/fetch_new_rides_usecase.dart';
 import 'package:shakshak/features/driver/new_rides/presentation/view_model/ride_state.dart';
 import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_data.dart';
-
 import 'package:shakshak/features/driver/new_rides/domain/usecases/reject_ride_usecase.dart';
-import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_data.dart';
+import 'package:shakshak/core/services/location_service.dart';
+import 'package:shakshak/features/driver/new_rides/domain/repositories/new_ride_repo.dart';
 
 class RideCubit extends Cubit<RideState> {
   RideCubit(
@@ -39,6 +40,7 @@ class RideCubit extends Cubit<RideState> {
   final RealtimeManager _realtimeService;
   String? _newRidesToken;
   final Map<int, String> _tripChannelTokens = {};
+  StreamSubscription<loc.LocationData>? _locationSubscription;
   final FetchNewRidesUseCase fetchNewRidesUseCase;
   final AcceptRideUseCase acceptRideUseCase;
   final CounterOfferUseCase counterOfferUseCase;
@@ -119,14 +121,14 @@ class RideCubit extends Cubit<RideState> {
       return;
     }
 
-    final channelName = 'driver-$driverId';
+    final channelName = 'private-driver.$driverId';
     debugPrint('📡 RideCubit: Subscribing to $channelName channel...');
     _newRidesToken = _realtimeService.addListener(
       channel: channelName,
-      event: "TripStatusUpdated",
+      event: "TripCreated",
       callback: (data) {
         try {
-          debugPrint('📥 TripStatusUpdated on drivers channel: $data');
+          debugPrint('📥 TripCreated on drivers channel: $data');
 
           Map<String, dynamic> payload;
           if (data is String) {
@@ -169,7 +171,7 @@ class RideCubit extends Cubit<RideState> {
             // رحلة موجودة - حدّث بياناتها (رد العميل على الأوفر مثلاً)
             debugPrint('📥 تحديث رحلة موجودة id=${ride.id} status=${ride.status}');
             final updatedRides = state.rides.map((r) {
-              return r.id == ride.id ? ride : r;
+              return r.id == ride.id ? r.merge(ride) : r;
             }).toList();
             final sorted = _sortRides(updatedRides, state.pendingOffers);
             emit(state.copyWith(status: RideStatus.loaded, rides: sorted));
@@ -210,9 +212,9 @@ class RideCubit extends Cubit<RideState> {
           if (orderJson == null) return;
 
           // تحديث الرحلة في الـ state بنفس الـ id
-          final updatedRide = NewRideData.fromJson(orderJson);
+          final newRide = NewRideData.fromJson(orderJson);
           final updatedRides = state.rides.map((r) {
-            return r.id == orderId ? updatedRide : r;
+            return r.id == orderId ? r.merge(newRide) : r;
           }).toList();
 
           final sorted = _sortRides(updatedRides, state.pendingOffers);
@@ -253,8 +255,19 @@ class RideCubit extends Cubit<RideState> {
         Set<int> updatedPending = Set.from(state.pendingOffers);
         updatedPending.remove(orderId);
 
+        // اشترك في trip-{id} عشان تتابع حالة الرحلة في الوقت الفعلي
+        subscribeToTripChannel(orderId);
+
+        // Update local status of this ride to 'accepted'
+        final updatedRides = state.rides.map((r) {
+          if (r.id == orderId) {
+            return r.copyWith(status: 'accepted');
+          }
+          return r;
+        }).toList();
+
         // إعادة ترتيب بعد الحذف من الـ pending
-        final sorted = _sortRides(state.rides, updatedPending);
+        final sorted = _sortRides(updatedRides, updatedPending);
 
         emit(state.copyWith(
             actionStatus: RideActionStatus.success,
@@ -354,8 +367,188 @@ class RideCubit extends Cubit<RideState> {
     return [...pending, ...others];
   }
 
+  void startTripLocationTracking() {
+    _locationSubscription?.cancel();
+    debugPrint("📡 RideCubit: Starting active trip location updates...");
+
+    // Make sure LocationService is tracking
+    sl<LocationService>().startTracking(highAccuracy: true);
+
+    _locationSubscription = sl<LocationService>().onLocationChanged.listen((locData) {
+      if (locData.latitude == null || locData.longitude == null) return;
+
+      final newLoc = LatLng(locData.latitude!, locData.longitude!);
+      currentDriverLocation = newLoc;
+
+      double speedKmH = (locData.speed ?? 0.0) * 3.6;
+      double heading = locData.heading ?? 0.0;
+
+      emit(state.copyWith(
+        currentDriverLocation: newLoc,
+        currentSpeed: speedKmH,
+        currentBearing: heading,
+      ));
+    });
+  }
+
+  void stopTripLocationTracking() {
+    _locationSubscription?.cancel();
+    _locationSubscription = null;
+    debugPrint("🔌 RideCubit: Stopped active trip location updates.");
+  }
+
+  Future<void> arriveRide(int orderId) async {
+    emit(state.copyWith(
+        actionStatus: RideActionStatus.loading, actionOrderId: orderId));
+
+    final result = await sl<NewRideRepo>().arriveRide(orderId);
+
+    result.fold(
+      (fail) => emit(state.copyWith(
+          actionStatus: RideActionStatus.error,
+          actionOrderId: orderId,
+          message: fail.message)),
+      (success) {
+        // Update local status immediately to 'arrived'
+        final updatedRides = state.rides.map((r) {
+          if (r.id == orderId) {
+            return r.copyWith(status: 'arrived');
+          }
+          return r;
+        }).toList();
+        final sorted = _sortRides(updatedRides, state.pendingOffers);
+
+        emit(state.copyWith(
+          actionStatus: RideActionStatus.success,
+          actionOrderId: orderId,
+          rides: sorted,
+          message: "تم تأكيد الوصول لموقع العميل",
+        ));
+      },
+    );
+  }
+
+  Future<void> startRide(int orderId) async {
+    emit(state.copyWith(
+        actionStatus: RideActionStatus.loading, actionOrderId: orderId));
+
+    final result = await sl<NewRideRepo>().startRide(orderId);
+
+    result.fold(
+      (fail) => emit(state.copyWith(
+          actionStatus: RideActionStatus.error,
+          actionOrderId: orderId,
+          message: fail.message)),
+      (success) {
+        // Update local status immediately to 'started'
+        final updatedRides = state.rides.map((r) {
+          if (r.id == orderId) {
+            return r.copyWith(status: 'started');
+          }
+          return r;
+        }).toList();
+        final sorted = _sortRides(updatedRides, state.pendingOffers);
+
+        emit(state.copyWith(
+          actionStatus: RideActionStatus.success,
+          actionOrderId: orderId,
+          rides: sorted,
+          message: "بدأت الرحلة، نتمنى لكم طريقاً آمناً",
+        ));
+      },
+    );
+  }
+
+  Future<void> completeRide(int orderId) async {
+    emit(state.copyWith(
+        actionStatus: RideActionStatus.loading, actionOrderId: orderId));
+
+    final result = await sl<NewRideRepo>().completeRide(orderId);
+
+    result.fold(
+      (fail) => emit(state.copyWith(
+          actionStatus: RideActionStatus.error,
+          actionOrderId: orderId,
+          message: fail.message)),
+      (success) {
+        unsubscribeFromTripChannel(orderId);
+
+        // Remove the ride from list of rides
+        final updatedRides = state.rides.where((r) => r.id != orderId).toList();
+        final sorted = _sortRides(updatedRides, state.pendingOffers);
+
+        emit(state.copyWith(
+          actionStatus: RideActionStatus.success,
+          actionOrderId: orderId,
+          rides: sorted,
+          message: "تم إنهاء الرحلة بنجاح",
+        ));
+      },
+    );
+  }
+
+  Future<void> cancelRide(int orderId) async {
+    emit(state.copyWith(
+        actionStatus: RideActionStatus.loading, actionOrderId: orderId));
+
+    final result = await sl<NewRideRepo>().cancelRide(orderId);
+
+    result.fold(
+      (fail) => emit(state.copyWith(
+          actionStatus: RideActionStatus.error,
+          actionOrderId: orderId,
+          message: fail.message)),
+      (success) {
+        unsubscribeFromTripChannel(orderId);
+
+        // Remove the ride from list of rides
+        final updatedRides = state.rides.where((r) => r.id != orderId).toList();
+        final sorted = _sortRides(updatedRides, state.pendingOffers);
+
+        emit(state.copyWith(
+          actionStatus: RideActionStatus.success,
+          actionOrderId: orderId,
+          rides: sorted,
+          message: "تم إلغاء الرحلة بنجاح",
+        ));
+      },
+    );
+  }
+
+  Future<void> verifyPickupOtp(int orderId, String otp) async {
+    emit(state.copyWith(
+        actionStatus: RideActionStatus.loading, actionOrderId: orderId));
+
+    final result = await sl<NewRideRepo>().verifyPickupOtp(orderId, otp);
+
+    result.fold(
+      (fail) => emit(state.copyWith(
+          actionStatus: RideActionStatus.error,
+          actionOrderId: orderId,
+          message: fail.message ?? "رمز التحقق غير صحيح")),
+      (success) {
+        if (success) {
+          final updatedVerified = Set<int>.from(state.verifiedTripOtps)..add(orderId);
+          emit(state.copyWith(
+            actionStatus: RideActionStatus.success,
+            actionOrderId: orderId,
+            verifiedTripOtps: updatedVerified,
+            message: "تم التحقق من الرمز بنجاح",
+          ));
+        } else {
+          emit(state.copyWith(
+            actionStatus: RideActionStatus.error,
+            actionOrderId: orderId,
+            message: "رمز التحقق غير صحيح",
+          ));
+        }
+      },
+    );
+  }
+
   @override
   Future<void> close() {
+    _locationSubscription?.cancel();
     if (_newRidesToken != null) {
       _realtimeService.removeListener(_newRidesToken!);
     }

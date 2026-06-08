@@ -20,4 +20,19 @@ abstract class NewRideRepo {
 
   /// Rejects a ride request.
   Future<Either<Failure, bool>> rejectRide(int orderId);
+
+  /// Marks the driver as arrived at pickup.
+  Future<Either<Failure, bool>> arriveRide(int orderId);
+
+  /// Starts the trip/ride.
+  Future<Either<Failure, bool>> startRide(int orderId);
+
+  /// Completes/ends the trip/ride.
+  Future<Either<Failure, bool>> completeRide(int orderId);
+
+  /// Cancels the trip/ride.
+  Future<Either<Failure, bool>> cancelRide(int orderId);
+
+  /// Verifies the pickup OTP code for starting the trip.
+  Future<Either<Failure, bool>> verifyPickupOtp(int orderId, String otp);
 }

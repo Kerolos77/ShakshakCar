@@ -1,3 +1,4 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shakshak/features/driver/home/data/models/demand_map_model.dart';
 import 'package:shakshak/features/driver/new_rides/domain/entities/negotiation_settings_entity.dart';
 import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_data.dart';
@@ -22,6 +23,12 @@ class RideState {
   final NegotiationSettingsEntity? negotiationSettings;
   final DemandMapModel? demandMap;
 
+  // Driver active trip tracking parameters
+  final LatLng? currentDriverLocation;
+  final double currentSpeed;
+  final double currentBearing;
+  final Set<int> verifiedTripOtps;
+
   RideState({
     required this.status,
     required this.actionStatus,
@@ -34,11 +41,16 @@ class RideState {
     this.newRideSeenAt = const {},
     this.negotiationSettings,
     this.demandMap,
+    this.currentDriverLocation,
+    this.currentSpeed = 0.0,
+    this.currentBearing = 0.0,
+    this.verifiedTripOtps = const {},
   });
 
   factory RideState.initial() => RideState(
         status: RideStatus.initial,
         actionStatus: RideActionStatus.initial,
+        verifiedTripOtps: const {},
       );
 
   RideState copyWith({
@@ -54,6 +66,10 @@ class RideState {
     Map<int, DateTime>? newRideSeenAt,
     NegotiationSettingsEntity? negotiationSettings,
     DemandMapModel? demandMap,
+    LatLng? currentDriverLocation,
+    double? currentSpeed,
+    double? currentBearing,
+    Set<int>? verifiedTripOtps,
   }) {
     return RideState(
       status: status ?? this.status,
@@ -68,6 +84,10 @@ class RideState {
       newRideSeenAt: newRideSeenAt ?? this.newRideSeenAt,
       negotiationSettings: negotiationSettings ?? this.negotiationSettings,
       demandMap: demandMap ?? this.demandMap,
+      currentDriverLocation: currentDriverLocation ?? this.currentDriverLocation,
+      currentSpeed: currentSpeed ?? this.currentSpeed,
+      currentBearing: currentBearing ?? this.currentBearing,
+      verifiedTripOtps: verifiedTripOtps ?? this.verifiedTripOtps,
     );
   }
 }

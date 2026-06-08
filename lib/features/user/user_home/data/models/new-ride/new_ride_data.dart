@@ -99,6 +99,10 @@ class NewRideData implements NewRideDataEntity {
   final PaymentDetailsModel? paymentDetails;
   @override
   final List<OfferModel> offers;
+  @override
+  final String? pickupOtp;
+  @override
+  final String? deliveryOtp;
 
   NewRideData({
     required this.id,
@@ -137,6 +141,8 @@ class NewRideData implements NewRideDataEntity {
     this.commission,
     this.paymentDetails,
     this.offers = const [],
+    this.pickupOtp,
+    this.deliveryOtp,
   });
 
   NewRideData copyWith({
@@ -176,6 +182,8 @@ class NewRideData implements NewRideDataEntity {
     String? commission,
     PaymentDetailsModel? paymentDetails,
     List<OfferModel>? offers,
+    String? pickupOtp,
+    String? deliveryOtp,
   }) {
     return NewRideData(
       id: id ?? this.id,
@@ -214,6 +222,49 @@ class NewRideData implements NewRideDataEntity {
       commission: commission ?? this.commission,
       paymentDetails: paymentDetails ?? this.paymentDetails,
       offers: offers ?? this.offers,
+      pickupOtp: pickupOtp ?? this.pickupOtp,
+      deliveryOtp: deliveryOtp ?? this.deliveryOtp,
+    );
+  }
+
+  NewRideData merge(NewRideDataEntity other) {
+    return copyWith(
+      destinationLat: other.destinationLat != 0.0 ? other.destinationLat : destinationLat,
+      destinationLong: other.destinationLong != 0.0 ? other.destinationLong : destinationLong,
+      destinationAddress: other.destinationAddress.isNotEmpty ? other.destinationAddress : destinationAddress,
+      sourceLat: other.sourceLat != 0.0 ? other.sourceLat : sourceLat,
+      sourceLong: other.sourceLong != 0.0 ? other.sourceLong : sourceLong,
+      sourceAddress: other.sourceAddress.isNotEmpty ? other.sourceAddress : sourceAddress,
+      amount: other.amount > 0 ? other.amount : amount,
+      finalRate: other.finalRate > 0 ? other.finalRate : finalRate,
+      distance: other.distance > 0 ? other.distance : distance,
+      distanceType: other.distanceType.isNotEmpty ? other.distanceType : distanceType,
+      status: other.status.isNotEmpty ? other.status : status,
+      isOffer: other.isOffer,
+      user: other.user is NewRideUser ? (other.user as NewRideUser) : user,
+      whenDate: other.whenDate ?? whenDate,
+      interCity: other.interCity,
+      userServiceId: other.userServiceId > 0 ? other.userServiceId : userServiceId,
+      paid: other.paid,
+      paymentType: other.paymentType.isNotEmpty ? other.paymentType : paymentType,
+      numberOfPassenger: other.numberOfPassenger > 0 ? other.numberOfPassenger : numberOfPassenger,
+      serviceType: other.serviceType.isNotEmpty ? other.serviceType : serviceType,
+      reviewsCount: other.reviewsCount > 0 ? other.reviewsCount : reviewsCount,
+      hasReview: other.hasReview,
+      driver: other.driver is NewRideUser ? (other.driver as NewRideUser) : (other.driver == null ? driver : null),
+      carBrand: other.carBrand ?? carBrand,
+      carModel: other.carModel ?? carModel,
+      carColor: other.carColor ?? carColor,
+      carPlate: other.carPlate ?? carPlate,
+      parcelDimension: other.parcelDimension ?? parcelDimension,
+      parcelImage: other.parcelImage ?? parcelImage,
+      parcelWeight: other.parcelWeight ?? parcelWeight,
+      offerdriver: other.offerdriver ?? offerdriver,
+      commission: other.commission ?? commission,
+      paymentDetails: other.paymentDetails is PaymentDetailsModel ? (other.paymentDetails as PaymentDetailsModel) : paymentDetails,
+      offers: other.offers.isNotEmpty ? other.offers.cast<OfferModel>() : offers,
+      pickupOtp: other.pickupOtp?.isNotEmpty == true ? other.pickupOtp : pickupOtp,
+      deliveryOtp: other.deliveryOtp?.isNotEmpty == true ? other.deliveryOtp : deliveryOtp,
     );
   }
 
@@ -366,6 +417,8 @@ class NewRideData implements NewRideDataEntity {
               .map((o) => OfferModel.fromJson(o))
               .toList()
           : const [],
+      pickupOtp: _string(json['pickup_otp'] ?? json['pickupOtp']),
+      deliveryOtp: _string(json['delivery_otp'] ?? json['deliveryOtp']),
     );
   }
 }

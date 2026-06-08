@@ -3,7 +3,7 @@ class SendMessageDataEntity {
   final String? description;
   final String? updatedAt;
   final String? createdAt;
-  final int? id;
+  final dynamic id;
 
   const SendMessageDataEntity({
     this.email,
