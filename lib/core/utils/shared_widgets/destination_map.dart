@@ -54,15 +54,30 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
   bool _hasLoadedOnce = false;
   // ✅ الخريطة نفسها لسا مش جاهزة
   bool _isMapReady = false;
+  BitmapDescriptor? _driverIcon3D;
 
   @override
   void initState() {
     super.initState();
+    _loadDriverIcon();
     // ✅ نحمّل الـ route مرة واحدة هنا فقط (لا نكررها في onMapCreated)
     if (widget.start != null && widget.end != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _loadRoute();
       });
+    }
+  }
+
+  Future<void> _loadDriverIcon() async {
+    try {
+      final icon = await MapMarkerHelper.create3DCarMarkerBitmap();
+      if (mounted) {
+        setState(() {
+          _driverIcon3D = icon;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading 3D car marker: $e");
     }
   }
 
@@ -123,9 +138,6 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
     final BitmapDescriptor endIcon =
         await MapMarkerHelper.createCircleMarkerBitmap(Colors.red,
             isSquare: true);
-    final BitmapDescriptor driverIcon =
-        await MapMarkerHelper.createCircleMarkerBitmap(Colors.blue,
-            isSquare: false);
 
     if (widget.testMode) {
       tripPolylinePoints = [widget.start!, widget.end!];
@@ -209,16 +221,6 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
         anchor: const Offset(0.5, 0.5),
       ));
 
-      if (widget.driverLocation != null) {
-        _extraMarkers.add(Marker(
-          markerId: const MarkerId('driver'),
-          position: widget.driverLocation!,
-          icon: driverIcon,
-          anchor: const Offset(0.5, 0.5),
-          infoWindow: const InfoWindow(title: "My Location"),
-        ));
-      }
-
       if (tripPolylinePoints.isNotEmpty && infoIcon != null) {
         final LatLng midPoint =
             tripPolylinePoints[tripPolylinePoints.length ~/ 2];
@@ -291,6 +293,32 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
     }
   }
 
+  Set<Marker> _buildAllMarkers() {
+    final Set<Marker> allMarkers = {..._createCarMarkers(), ..._extraMarkers};
+    
+    // Ensure we don't have a static driver marker
+    allMarkers.removeWhere((m) => m.markerId.value == 'driver');
+
+    if (widget.driverLocation != null) {
+      double bearing = 0.0;
+      if (widget.cubit != null) {
+        try {
+          bearing = widget.cubit.state.currentBearing;
+        } catch (_) {}
+      }
+      allMarkers.add(Marker(
+        markerId: const MarkerId('driver'),
+        position: widget.driverLocation!,
+        icon: _driverIcon3D ?? BitmapDescriptor.defaultMarker,
+        anchor: const Offset(0.5, 0.5),
+        rotation: bearing,
+        flat: true,
+        infoWindow: const InfoWindow(title: "My Location"),
+      ));
+    }
+    return allMarkers;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -330,12 +358,12 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
           mapToolbarEnabled: false,
           rotateGesturesEnabled: true,
           tiltGesturesEnabled: true,
-          myLocationEnabled: true,
+          myLocationEnabled: widget.userMap,
           myLocationButtonEnabled: false,
           onCameraMoveStarted: widget.onCameraMoveStarted,
           onCameraMove: widget.onCameraMove,
           onCameraIdle: widget.onCameraIdle,
-          markers: {..._createCarMarkers(), ..._extraMarkers},
+          markers: _buildAllMarkers(),
           polylines: _polylines,
           liteModeEnabled: false, // ✅ Full mode للـ interactivity
         ),

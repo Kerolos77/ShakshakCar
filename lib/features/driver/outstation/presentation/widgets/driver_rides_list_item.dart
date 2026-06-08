@@ -59,12 +59,25 @@ class _DriverRidesListItemState extends State<DriverRidesListItem> {
 
         if (state.actionStatus == RideActionStatus.success &&
             state.actionOrderId == widget.ride.id) {
-          debugPrint("🚀 RideCubit: Accept success for ride ${widget.ride.id}, navigating to trip map view.");
-          navigateTo(
-            context,
-            Routes.tripMapView,
-            extra: TripMapArgs(ride: widget.ride),
-          );
+          final bool exists = state.rides.any((r) => r.id == widget.ride.id);
+          if (exists) {
+            final currentRideInState = state.rides.firstWhere((r) => r.id == widget.ride.id);
+            final bool isTripActive = currentRideInState.status == 'accepted' ||
+                currentRideInState.status == 'assigned' ||
+                currentRideInState.status == 'driver_on_a_way' ||
+                currentRideInState.status == 'arrived' ||
+                currentRideInState.status == 'started' ||
+                currentRideInState.status == 'on_trip';
+                
+            if (isTripActive) {
+              debugPrint("🚀 RideCubit: Trip is active for ride ${widget.ride.id}, navigating to trip map view.");
+              navigateTo(
+                context,
+                Routes.tripMapView,
+                extra: TripMapArgs(ride: currentRideInState),
+              );
+            }
+          }
         }
       },
       child: MainCard(
