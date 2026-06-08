@@ -36,6 +36,7 @@ import 'package:shakshak/features/shared/authentication/presentation/view_models
 import 'package:shakshak/features/shared/notifications/presentation/manager/notification_cubit.dart';
 import 'package:shakshak/features/shared/loyalty/presentation/view_models/loyalty_cubit.dart';
 import 'package:shakshak/core/services/user_storage_service.dart';
+import 'package:shakshak/features/shared/authentication/data/models/profile_model.dart';
 import 'package:shakshak/core/network/network_info/network_cubit.dart';
 import 'package:shakshak/core/utils/shared_widgets/global_network_banner.dart';
 import 'generated/l10n.dart';

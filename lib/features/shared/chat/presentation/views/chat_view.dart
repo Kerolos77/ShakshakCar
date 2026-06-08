@@ -1,4 +1,4 @@
-﻿import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,6 +16,12 @@ import 'package:shakshak/generated/assets.dart';
 import 'package:shakshak/generated/l10n.dart';
 import 'package:shakshak/features/shared/chat/presentation/widgets/chat_list_item.dart';
 
+import 'dart:convert';
+import 'package:shakshak/core/services/real_time/realtime_manager.dart';
+import 'package:shakshak/core/services/service_locator.dart';
+import 'package:shakshak/core/constants/app_const.dart';
+import 'package:shakshak/core/network/local/cache_helper.dart';
+
 class ChatView extends StatefulWidget {
   final int tripId;
   final String? driverName;
@@ -32,6 +38,62 @@ class ChatView extends StatefulWidget {
 
 class _ChatViewState extends State<ChatView> {
   final TextEditingController _messageController = TextEditingController();
+  String? _chatListenerToken;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribeToRealtimeChat();
+  }
+
+  void _subscribeToRealtimeChat() {
+    final String channelName = "trip-${widget.tripId}";
+    debugPrint("📡 ChatView: Subscribing to real-time chat on $channelName...");
+    _chatListenerToken = sl<RealtimeManager>().addListener(
+      channel: channelName,
+      event: ".chat",
+      callback: (data) {
+        try {
+          debugPrint("📥 Realtime Chat Message: $data");
+          Map<String, dynamic> payload;
+          if (data is String) {
+            payload = jsonDecode(data) as Map<String, dynamic>;
+          } else if (data is Map<String, dynamic>) {
+            payload = data;
+          } else if (data is Map) {
+            payload = Map<String, dynamic>.from(data);
+          } else {
+            return;
+          }
+
+          final String text = payload['message'] ?? payload['text'] ?? payload['description'] ?? '';
+          if (text.isEmpty) return;
+
+          // Prevent duplicate messages
+          final bool alreadyExists = messages.any((m) => m['text'] == text);
+          if (alreadyExists) return;
+
+          final isDriver = CacheHelper.getData(key: AppConstant.kIsDriver) == 1;
+          final senderType = payload['sender_type']?.toString().toLowerCase();
+          final bool isSentByMe = (isDriver && senderType == 'driver') || (!isDriver && senderType == 'user');
+
+          if (mounted) {
+            setState(() {
+              messages.add({
+                "text": text,
+                "isSent": isSentByMe,
+                "time": "10 AM",
+                "avatar": isSentByMe ? "assets/images/user1.png" : "assets/images/user2.png",
+              });
+            });
+          }
+        } catch (e) {
+          debugPrint("⚠️ Error processing realtime chat message: $e");
+        }
+      },
+    );
+  }
+
   final List<Map<String, dynamic>> messages = [
     {
       "text":
@@ -95,6 +157,10 @@ class _ChatViewState extends State<ChatView> {
 
   @override
   void dispose() {
+    if (_chatListenerToken != null) {
+      sl<RealtimeManager>().removeListener(_chatListenerToken!);
+      sl<RealtimeManager>().unsubscribe("trip-${widget.tripId}");
+    }
     _messageController.dispose();
     super.dispose();
   }

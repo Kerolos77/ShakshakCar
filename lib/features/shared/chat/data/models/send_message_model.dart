@@ -9,9 +9,11 @@ class SendMessageModel extends SendMessageEntity {
 
   SendMessageModel.fromJson(dynamic json)
       : super(
-          success: json['success'],
+          success: json['success'] ?? json['status'],
           message: json['message'],
-          data: json['data'] != null ? Data.fromJson(json['data']) : null,
+          data: (json['data'] != null && json['data'] is Map)
+              ? Data.fromJson(json['data'])
+              : null,
         );
 
   Map<String, dynamic> toJson() {
@@ -36,11 +38,11 @@ class Data extends SendMessageDataEntity {
 
   Data.fromJson(dynamic json)
       : super(
-          email: json['email'],
-          description: json['description'],
-          updatedAt: json['updated_at'],
-          createdAt: json['created_at'],
-          id: json['id'],
+          email: json is Map ? json['email'] : null,
+          description: json is Map ? json['description'] : null,
+          updatedAt: json is Map ? json['updated_at'] : null,
+          createdAt: json is Map ? json['created_at'] : null,
+          id: json is Map ? json['id'] : null,
         );
 
   Map<String, dynamic> toJson() {

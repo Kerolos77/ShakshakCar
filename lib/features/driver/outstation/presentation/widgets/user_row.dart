@@ -94,6 +94,26 @@ class UserRow extends StatelessWidget {
             ],
           ),
         ),
+        if (ride.status == 'accepted' || ride.status == 'started' || ride.status == 'arrived') ...[
+          8.pw,
+          IconButton(
+            icon: Icon(
+              Icons.chat_bubble_outline_rounded,
+              color: Styles.getPrimaryColor(context),
+              size: 22.r,
+            ),
+            onPressed: () {
+              navigateTo(
+                context,
+                Routes.chatView,
+                extra: ChatViewArgs(
+                  rideId: ride.id,
+                  driverName: ride.user.name,
+                ),
+              );
+            },
+          ),
+        ],
         const Spacer(),
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,

@@ -73,6 +73,9 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
       _hasLoadedOnce = false;
       _loadRoute();
     }
+    if (widget.driverLocation != oldWidget.driverLocation && widget.driverLocation != null) {
+      _animateToDriverLocation();
+    }
   }
 
   Set<Marker> _createCarMarkers() {
@@ -243,6 +246,28 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
         );
       }
     }
+  }
+
+  void _animateToDriverLocation() {
+    if (_mapController == null || widget.driverLocation == null) return;
+
+    double bearing = 0.0;
+    if (widget.cubit != null) {
+      try {
+        bearing = widget.cubit.state.currentBearing;
+      } catch (_) {}
+    }
+
+    _mapController!.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: widget.driverLocation!,
+          zoom: 17.0, // High zoom for active driving navigation
+          bearing: bearing,
+          tilt: 45.0, // 3D perspective
+        ),
+      ),
+    );
   }
 
   String _formatDistance(String? dist) {

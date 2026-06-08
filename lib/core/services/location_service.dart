@@ -11,6 +11,8 @@ class LocationService {
   final Location _location = Location();
   StreamSubscription<LocationData>? _locationSubscription;
 
+  Stream<LocationData> get onLocationChanged => _location.onLocationChanged;
+
   // Test Mode
   String? _testToken;
 

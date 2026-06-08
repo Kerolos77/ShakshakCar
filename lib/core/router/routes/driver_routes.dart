@@ -98,7 +98,10 @@ class DriverRoutes {
       path: Routes.tripMapView,
       builder: (context, state) {
         final args = state.extra as TripMapArgs;
-        return TripMapView(ride: args.ride);
+        return BlocProvider.value(
+          value: sl<RideCubit>(),
+          child: TripMapView(ride: args.ride),
+        );
       },
     ),
     GoRoute(
