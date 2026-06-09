@@ -588,12 +588,12 @@ class RideTrackingCubit extends Cubit<RideTrackingState> {
       _realtimeManager.unsubscribe(_driverLocationChannel!);
     }
 
-    _driverLocationChannel = "location-$driverId";
+    _driverLocationChannel = "private-location.$driverId";
     debugPrint('📡 RideTrackingCubit: Subscribing to driver location channel: $_driverLocationChannel');
     
     _locUpdateToken = _realtimeManager.addListener(
       channel: _driverLocationChannel!,
-      event: 'location_update',
+      event: 'LocationUpdated',
       callback: (data) {
         try {
           double lat = double.parse(

@@ -4,14 +4,16 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shakshak/features/user/user_home_page/logic/home_cubit.dart';
 import 'package:shakshak/features/user/user_home_page/logic/home_states.dart';
 
-class UserMapWidget extends StatelessWidget {
+class UserMapWidget extends StatefulWidget {
   final Function() onCameraIdle;
   final Function(CameraPosition) onCameraMove;
   final Function() onCameraMoveStarted;
   final Function(GoogleMapController) onMapCreated;
   final dynamic cubit;
+  final List<LatLng> cars;
 
   const UserMapWidget({
+    super.key,
     required this.onCameraIdle,
     required this.onCameraMove,
     required this.onCameraMoveStarted,
@@ -20,10 +22,27 @@ class UserMapWidget extends StatelessWidget {
     required this.cars,
   });
 
-  final List<LatLng> cars;
+  @override
+  State<UserMapWidget> createState() => _UserMapWidgetState();
+}
+
+class _UserMapWidgetState extends State<UserMapWidget> {
+  bool _shouldRenderMap = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _shouldRenderMap = true;
+        });
+      }
+    });
+  }
 
   Set<Marker> _createCarMarkers() {
-    return cars
+    return widget.cars
         .asMap()
         .entries
         .map(
@@ -39,11 +58,14 @@ class UserMapWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!_shouldRenderMap) {
+      return const SizedBox.shrink();
+    }
     return Stack(
       children: [
         GoogleMap(
           initialCameraPosition: CameraPosition(
-            target: cubit.mapLocation,
+            target: widget.cubit.mapLocation,
             zoom: 17.0,
           ),
           trafficEnabled: true,
@@ -57,10 +79,10 @@ class UserMapWidget extends StatelessWidget {
           tiltGesturesEnabled: true,
           myLocationEnabled: true,
           myLocationButtonEnabled: false,
-          onMapCreated: onMapCreated,
-          onCameraMoveStarted: onCameraMoveStarted,
-          onCameraMove: onCameraMove,
-          onCameraIdle: onCameraIdle,
+          onMapCreated: widget.onMapCreated,
+          onCameraMoveStarted: widget.onCameraMoveStarted,
+          onCameraMove: widget.onCameraMove,
+          onCameraIdle: widget.onCameraIdle,
           markers: _createCarMarkers(),
         ),
         // ✅ إضافة الهيكل الموحد للتنزيل

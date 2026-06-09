@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shakshak/core/utils/shared_widgets/map_utils.dart';
 
-class UserMapWidget extends StatelessWidget {
+class UserMapWidget extends StatefulWidget {
   const UserMapWidget({
     super.key,
     required this.onMapCreated,
@@ -11,17 +11,40 @@ class UserMapWidget extends StatelessWidget {
     this.onCameraIdle,
   });
 
-  final CameraPosition _initialLocation = const CameraPosition(
-    target: LatLng(26.8206, 30.8025), // إحداثيات جمهورية مصر العربية
-    zoom: 20.0,
-  );
   final Function(GoogleMapController controller) onMapCreated;
   final bool padding;
   final void Function(CameraPosition position)? onCameraMove;
   final void Function()? onCameraIdle;
 
   @override
+  State<UserMapWidget> createState() => _UserMapWidgetState();
+}
+
+class _UserMapWidgetState extends State<UserMapWidget> {
+  bool _shouldRenderMap = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _shouldRenderMap = true;
+        });
+      }
+    });
+  }
+
+  final CameraPosition _initialLocation = const CameraPosition(
+    target: LatLng(26.8206, 30.8025), // إحداثيات جمهورية مصر العربية
+    zoom: 20.0,
+  );
+
+  @override
   Widget build(BuildContext context) {
+    if (!_shouldRenderMap) {
+      return const SizedBox.shrink();
+    }
     return Align(
       alignment: Alignment.bottomCenter,
       child: SizedBox(
@@ -36,7 +59,7 @@ class UserMapWidget extends StatelessWidget {
           onMapCreated: (controller) {
             MapUtils.applyMapStyle(
                 controller, Theme.of(context).brightness == Brightness.dark);
-            onMapCreated(controller);
+            widget.onMapCreated(controller);
           },
           compassEnabled: true,
           zoomControlsEnabled: false,
@@ -47,8 +70,8 @@ class UserMapWidget extends StatelessWidget {
           tiltGesturesEnabled: true,
           myLocationEnabled: true,
           myLocationButtonEnabled: false,
-          onCameraMove: onCameraMove,
-          onCameraIdle: onCameraIdle,
+          onCameraMove: widget.onCameraMove,
+          onCameraIdle: widget.onCameraIdle,
           mapType: MapType.normal,
         ),
       ),
