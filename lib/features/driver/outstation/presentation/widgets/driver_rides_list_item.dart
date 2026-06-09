@@ -45,6 +45,10 @@ class _DriverRidesListItemState extends State<DriverRidesListItem> {
         widget.ride.amount.toDouble();
 
     return BlocListener<RideCubit, RideState>(
+      listenWhen: (previous, current) {
+        return previous.actionStatus != current.actionStatus ||
+            previous.actionOrderId != current.actionOrderId;
+      },
       listener: (context, state) {
         if (state.actionStatus == RideActionStatus.loading &&
             state.actionOrderId == widget.ride.id) {

@@ -27,14 +27,23 @@ class _DriverHomeMapState extends State<DriverHomeMap> {
       Completer<GoogleMapController>();
 
   bool _isMapReady = false;
-  bool _isLocationLoaded = false;
   LatLng _initialPosition = const LatLng(30.0444, 31.2357); // Cairo default fallback
   Timer? _refreshTimer;
+  bool _shouldRenderMap = false;
 
   @override
   void initState() {
     super.initState();
     _initLocation();
+
+    // Delay rendering the actual GoogleMap widget to prevent transition crashes on Android platform views
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _shouldRenderMap = true;
+        });
+      }
+    });
     
     // تحديث خريطة الطلب كل دقيقتين
     _refreshTimer = Timer.periodic(const Duration(minutes: 2), (timer) {
@@ -60,7 +69,6 @@ class _DriverHomeMapState extends State<DriverHomeMap> {
       if (!serviceEnabled) {
         serviceEnabled = await location.requestService();
         if (!serviceEnabled) {
-          if (mounted) setState(() => _isLocationLoaded = true);
           return;
         }
       }
@@ -71,7 +79,6 @@ class _DriverHomeMapState extends State<DriverHomeMap> {
       }
       
       if (hasPermission != loc.PermissionStatus.granted) {
-        if (mounted) setState(() => _isLocationLoaded = true);
         return;
       }
 
@@ -82,10 +89,7 @@ class _DriverHomeMapState extends State<DriverHomeMap> {
         if (data.latitude != null && data.longitude != null) {
           setState(() {
             _initialPosition = LatLng(data.latitude!, data.longitude!);
-            _isLocationLoaded = true;
           });
-        } else {
-          setState(() => _isLocationLoaded = true);
         }
 
         if (_controllerCompleter.isCompleted) {
@@ -94,9 +98,7 @@ class _DriverHomeMapState extends State<DriverHomeMap> {
         }
       }
     } catch (_) {
-      if (mounted) {
-        setState(() => _isLocationLoaded = true);
-      }
+      // Ignore location errors, map is already rendered at Cairo default fallback
     }
   }
 
@@ -155,6 +157,9 @@ class _DriverHomeMapState extends State<DriverHomeMap> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_shouldRenderMap) {
+      return const MapLoadingSkeleton();
+    }
     return BlocBuilder<RideCubit, RideState>(
       buildWhen: (prev, curr) => prev.demandMap != curr.demandMap,
       builder: (context, state) {
@@ -162,42 +167,41 @@ class _DriverHomeMapState extends State<DriverHomeMap> {
         
         return Stack(
           children: [
-            if (_isLocationLoaded)
-              GoogleMap(
-                initialCameraPosition: CameraPosition(
-                  target: _initialPosition,
-                  zoom: 15.0, // زوم أوضح لموقع السائق
-                ),
-                onMapCreated: (controller) {
-                  MapUtils.applyMapStyle(
-                      controller, Theme.of(context).brightness == Brightness.dark);
-                  if (!_controllerCompleter.isCompleted) {
-                    _controllerCompleter.complete(controller);
-                  }
-                  if (mounted) setState(() => _isMapReady = true);
-                },
-                onTap: (latLng) {
-                  if (widget.onTap != null) widget.onTap!();
-                },
-                onCameraMoveStarted: () {
-                  if (widget.onTap != null) widget.onTap!();
-                },
-                polygons: polygons,
-                myLocationEnabled: true,
-                myLocationButtonEnabled: false,
-                zoomControlsEnabled: false,
-                mapToolbarEnabled: false,
-                trafficEnabled: false,
-                indoorViewEnabled: false,
-                compassEnabled: false,
-                rotateGesturesEnabled: true,
-                tiltGesturesEnabled: false,
-                scrollGesturesEnabled: true,
-                zoomGesturesEnabled: true,
+            GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: _initialPosition,
+                zoom: 15.0, // زوم أوضح لموقع السائق
               ),
+              onMapCreated: (controller) {
+                MapUtils.applyMapStyle(
+                    controller, Theme.of(context).brightness == Brightness.dark);
+                if (!_controllerCompleter.isCompleted) {
+                  _controllerCompleter.complete(controller);
+                }
+                if (mounted) setState(() => _isMapReady = true);
+              },
+              onTap: (latLng) {
+                if (widget.onTap != null) widget.onTap!();
+              },
+              onCameraMoveStarted: () {
+                if (widget.onTap != null) widget.onTap!();
+              },
+              polygons: polygons,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              mapToolbarEnabled: false,
+              trafficEnabled: false,
+              indoorViewEnabled: false,
+              compassEnabled: false,
+              rotateGesturesEnabled: true,
+              tiltGesturesEnabled: false,
+              scrollGesturesEnabled: true,
+              zoomGesturesEnabled: true,
+            ),
             
             // Loading Overlay with smooth transition
-            if (!_isMapReady || !_isLocationLoaded)
+            if (!_isMapReady)
               const MapLoadingSkeleton(),
 
             // Offline Overlay

@@ -55,11 +55,20 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
   // ✅ الخريطة نفسها لسا مش جاهزة
   bool _isMapReady = false;
   BitmapDescriptor? _driverIcon3D;
+  bool _shouldRenderMap = false;
 
   @override
   void initState() {
     super.initState();
     _loadDriverIcon();
+    // Delay rendering the actual GoogleMap widget to prevent transition crashes on Android platform views
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _shouldRenderMap = true;
+        });
+      }
+    });
     // ✅ نحمّل الـ route مرة واحدة هنا فقط (لا نكررها في onMapCreated)
     if (widget.start != null && widget.end != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -321,6 +330,9 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_shouldRenderMap) {
+      return const MapLoadingSkeleton();
+    }
     return Stack(
       children: [
         GoogleMap(
