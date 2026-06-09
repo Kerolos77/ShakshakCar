@@ -96,11 +96,13 @@ class DriverRoutes {
     ),
     GoRoute(
       path: Routes.tripMapView,
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final args = state.extra as TripMapArgs;
-        return BlocProvider.value(
-          value: sl<RideCubit>(),
-          child: TripMapView(ride: args.ride),
+        return NoTransitionPage(
+          child: BlocProvider.value(
+            value: sl<RideCubit>(),
+            child: TripMapView(ride: args.ride),
+          ),
         );
       },
     ),

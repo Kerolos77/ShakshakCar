@@ -47,6 +47,7 @@ class _TrackingMapWidgetState extends State<TrackingMapWidget>
   final Set<Polyline> _polylines = {};
   final Set<Marker> _markers = {};
   bool _isMapReady = false;
+  bool _shouldRenderMap = false;
 
   // ⚡ Smooth Marker Animation
   AnimationController? _markerAnimController;
@@ -70,6 +71,15 @@ class _TrackingMapWidgetState extends State<TrackingMapWidget>
       duration: const Duration(milliseconds: 800),
     )..addListener(_onAnimationTick);
     _updateMap();
+
+    // Delay rendering the actual GoogleMap widget to prevent transition crashes on Android platform views
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _shouldRenderMap = true;
+        });
+      }
+    });
   }
 
   @override
@@ -428,6 +438,9 @@ class _TrackingMapWidgetState extends State<TrackingMapWidget>
 
   @override
   Widget build(BuildContext context) {
+    if (!_shouldRenderMap) {
+      return const MapLoadingSkeleton(icon: Icons.location_on_outlined);
+    }
     return Stack(
       children: [
         Listener(

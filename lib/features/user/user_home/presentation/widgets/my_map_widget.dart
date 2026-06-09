@@ -26,11 +26,21 @@ class UserMapWidget extends StatefulWidget {
 class _UserMapWidgetState extends State<UserMapWidget> {
   final Set<Marker> _markers = {};
   bool _isMapReady = false;
+  bool _shouldRenderMap = false;
 
   @override
   void initState() {
     super.initState();
     _loadInitialMarker();
+
+    // Delay rendering the actual GoogleMap widget to prevent transition crashes on Android platform views
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _shouldRenderMap = true;
+        });
+      }
+    });
   }
 
   void _loadInitialMarker() {
@@ -69,6 +79,9 @@ class _UserMapWidgetState extends State<UserMapWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_shouldRenderMap) {
+      return _MapLoadingSkeleton();
+    }
     return Stack(
       children: [
         GoogleMap(
