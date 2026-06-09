@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shakshak/core/router/route_args.dart';
@@ -97,7 +98,39 @@ class DriverRoutes {
     GoRoute(
       path: Routes.tripMapView,
       pageBuilder: (context, state) {
-        final args = state.extra as TripMapArgs;
+        TripMapArgs? args;
+        if (state.extra is TripMapArgs) {
+          args = state.extra as TripMapArgs;
+        } else {
+          try {
+            final rideCubit = sl<RideCubit>();
+            final activeRides = rideCubit.state.rides.where((r) {
+              return r.status == 'accepted' ||
+                  r.status == 'assigned' ||
+                  r.status == 'driver_on_a_way' ||
+                  r.status == 'arrived' ||
+                  r.status == 'started' ||
+                  r.status == 'on_trip';
+            }).toList();
+            if (activeRides.isNotEmpty) {
+              args = TripMapArgs(ride: activeRides.first);
+            }
+          } catch (e) {
+            debugPrint(
+                "Error resolving fallback active ride for TripMapArgs: $e");
+          }
+        }
+
+        if (args == null) {
+          return const NoTransitionPage(
+            child: Scaffold(
+              body: Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          );
+        }
+
         return NoTransitionPage(
           child: BlocProvider.value(
             value: sl<RideCubit>(),
