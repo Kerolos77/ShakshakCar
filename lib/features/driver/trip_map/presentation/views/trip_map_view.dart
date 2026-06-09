@@ -29,19 +29,21 @@ class TripMapView extends StatefulWidget {
 class _TripMapViewState extends State<TripMapView> {
   final Completer<GoogleMapController> mapCompleter =
       Completer<GoogleMapController>();
+  late final RideCubit _rideCubit;
 
   @override
   void initState() {
     super.initState();
+    _rideCubit = context.read<RideCubit>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<RideCubit>().startTripLocationTracking();
+      _rideCubit.startTripLocationTracking();
     });
   }
 
   @override
   void dispose() {
     try {
-      context.read<RideCubit>().stopTripLocationTracking();
+      _rideCubit.stopTripLocationTracking();
     } catch (e) {
       debugPrint("Could not stop tracking in dispose: $e");
     }
