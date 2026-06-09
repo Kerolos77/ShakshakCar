@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -22,6 +23,8 @@ class DestinationMapWidget extends StatefulWidget {
   final LatLng? driverLocation;
   final bool testMode;
   final bool userMap;
+  final double? bottomPadding;
+  final bool isTripStarted;
 
   const DestinationMapWidget({
     super.key,
@@ -36,6 +39,8 @@ class DestinationMapWidget extends StatefulWidget {
     this.driverLocation,
     this.userMap = false,
     this.testMode = false,
+    this.bottomPadding,
+    this.isTripStarted = false,
   });
 
   @override
@@ -56,6 +61,8 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
   bool _isMapReady = false;
   BitmapDescriptor? _driverIcon3D;
   bool _shouldRenderMap = false;
+  List<LatLng> _originalDriverToPickupPoints = [];
+  List<LatLng> _originalTripPolylinePoints = [];
 
   @override
   void initState() {
@@ -93,12 +100,15 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
   @override
   void didUpdateWidget(covariant DestinationMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.start != oldWidget.start || widget.end != oldWidget.end) {
+    if (widget.start != oldWidget.start || 
+        widget.end != oldWidget.end ||
+        widget.isTripStarted != oldWidget.isTripStarted) {
       _hasLoadedOnce = false;
       _loadRoute();
     }
     if (widget.driverLocation != oldWidget.driverLocation && widget.driverLocation != null) {
       _animateToDriverLocation();
+      _updateMovingDriverRoute();
     }
   }
 
@@ -148,36 +158,58 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
         await MapMarkerHelper.createCircleMarkerBitmap(Colors.red,
             isSquare: true);
 
-    if (widget.testMode) {
-      tripPolylinePoints = [widget.start!, widget.end!];
-      if (widget.driverLocation != null) {
-        driverToPickupPoints = [widget.driverLocation!, widget.start!];
+    if (widget.isTripStarted) {
+      // 1. Trip started: Driver is going from pickup (start) to destination (end)
+      // Primary solid line: start -> end
+      if (widget.testMode) {
+        tripPolylinePoints = [widget.start!, widget.end!];
+      } else {
+        final tripRoute = await _mapsService.fetchRoute(
+          start: widget.start!,
+          end: widget.end!,
+        );
+        if (tripRoute != null) {
+          tripPolylinePoints = tripRoute.polylinePoints;
+          if (mounted) {
+            routeDistance = _formatDistance(tripRoute.distance);
+            routeDuration = _formatDuration(tripRoute.duration);
+          }
+        } else {
+          tripPolylinePoints = [widget.start!, widget.end!];
+        }
       }
     } else {
-      // ✅ Route API: مُخزَّنة في Cache – لا تُعاد لنفس المسار
-      final tripRoute = await _mapsService.fetchRoute(
-        start: widget.start!,
-        end: widget.end!,
-      );
-      if (tripRoute != null) {
-        tripPolylinePoints = tripRoute.polylinePoints;
-        if (mounted) {
-          routeDistance = _formatDistance(tripRoute.distance);
-          routeDuration = _formatDuration(tripRoute.duration);
-        }
+      // 2. Heading to customer: Driver is going from current location to pickup (start)
+      // Primary solid line: driverLocation -> start
+      final LatLng driverStartLoc = widget.driverLocation ?? widget.start!;
+      if (widget.testMode) {
+        tripPolylinePoints = [driverStartLoc, widget.start!];
+        driverToPickupPoints = [widget.start!, widget.end!];
       } else {
-        tripPolylinePoints = [widget.start!, widget.end!];
-      }
-
-      if (widget.driverLocation != null) {
+        // Fetch route from driver to customer (pickup)
         final driverRoute = await _mapsService.fetchRoute(
-          start: widget.driverLocation!,
+          start: driverStartLoc,
           end: widget.start!,
         );
         if (driverRoute != null) {
-          driverToPickupPoints = driverRoute.polylinePoints;
+          tripPolylinePoints = driverRoute.polylinePoints;
+          if (mounted) {
+            routeDistance = _formatDistance(driverRoute.distance);
+            routeDuration = _formatDuration(driverRoute.duration);
+          }
         } else {
-          driverToPickupPoints = [widget.driverLocation!, widget.start!];
+          tripPolylinePoints = [driverStartLoc, widget.start!];
+        }
+
+        // Fetch secondary route from customer to destination
+        final tripRoute = await _mapsService.fetchRoute(
+          start: widget.start!,
+          end: widget.end!,
+        );
+        if (tripRoute != null) {
+          driverToPickupPoints = tripRoute.polylinePoints;
+        } else {
+          driverToPickupPoints = [widget.start!, widget.end!];
         }
       }
     }
@@ -189,6 +221,9 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
     }
 
     if (!mounted) return;
+
+    _originalTripPolylinePoints = List.from(tripPolylinePoints);
+    _originalDriverToPickupPoints = List.from(driverToPickupPoints);
 
     setState(() {
       _isLoadingRoute = false;
@@ -259,6 +294,20 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
     }
   }
 
+  LatLng _offsetLocation(LatLng point, double distanceMeters, double bearingDegrees) {
+    const double earthRadius = 6378137.0; // Earth's radius in meters
+    double bearingRad = bearingDegrees * math.pi / 180;
+    
+    double dLat = (distanceMeters * math.cos(bearingRad)) / earthRadius;
+    double dLng = (distanceMeters * math.sin(bearingRad)) / 
+                  (earthRadius * math.cos(math.pi * point.latitude / 180));
+                  
+    return LatLng(
+      point.latitude + (dLat * 180 / math.pi),
+      point.longitude + (dLng * 180 / math.pi),
+    );
+  }
+
   void _animateToDriverLocation() {
     if (_mapController == null || widget.driverLocation == null) return;
 
@@ -269,16 +318,76 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
       } catch (_) {}
     }
 
+    // Offset camera target 80 meters ahead in the heading direction so the car stays at the bottom portion of the screen
+    final target = _offsetLocation(widget.driverLocation!, 80.0, bearing);
+
     _mapController!.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
-          target: widget.driverLocation!,
+          target: target,
           zoom: 17.0, // High zoom for active driving navigation
           bearing: bearing,
           tilt: 45.0, // 3D perspective
         ),
       ),
     );
+  }
+
+  void _updateMovingDriverRoute() {
+    if (widget.driverLocation == null) return;
+
+    setState(() {
+      // 1. Update Driver to Pickup Polyline
+      if (_originalDriverToPickupPoints.isNotEmpty) {
+        int closestIndex = 0;
+        double minDistance = double.infinity;
+        for (int i = 0; i < _originalDriverToPickupPoints.length; i++) {
+          final dist = MapUtils.distanceBetween(widget.driverLocation!, _originalDriverToPickupPoints[i]);
+          if (dist < minDistance) {
+            minDistance = dist;
+            closestIndex = i;
+          }
+        }
+        final slicedPoints = _originalDriverToPickupPoints.sublist(closestIndex);
+        _polylines.removeWhere((p) => p.polylineId.value == 'route_driver');
+        if (slicedPoints.isNotEmpty) {
+          _polylines.add(
+            Polyline(
+              polylineId: const PolylineId('route_driver'),
+              points: [widget.driverLocation!, ...slicedPoints],
+              color: Colors.blue,
+              width: 5,
+              patterns: [PatternItem.dash(20), PatternItem.gap(10)],
+            ),
+          );
+        }
+      }
+
+      // 2. Update Trip Polyline
+      if (_originalTripPolylinePoints.isNotEmpty) {
+        int closestIndex = 0;
+        double minDistance = double.infinity;
+        for (int i = 0; i < _originalTripPolylinePoints.length; i++) {
+          final dist = MapUtils.distanceBetween(widget.driverLocation!, _originalTripPolylinePoints[i]);
+          if (dist < minDistance) {
+            minDistance = dist;
+            closestIndex = i;
+          }
+        }
+        final slicedPoints = _originalTripPolylinePoints.sublist(closestIndex);
+        _polylines.removeWhere((p) => p.polylineId.value == 'route_trip');
+        if (slicedPoints.isNotEmpty) {
+          _polylines.add(
+            Polyline(
+              polylineId: const PolylineId('route_trip'),
+              points: [widget.driverLocation!, ...slicedPoints],
+              color: AppColors.primaryColor,
+              width: 5,
+            ),
+          );
+        }
+      }
+    });
   }
 
   String _formatDistance(String? dist) {
@@ -343,7 +452,7 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
             zoom: 14.0,
           ),
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).size.height * 0.45,
+            bottom: widget.bottomPadding ?? MediaQuery.of(context).size.height * 0.45,
           ),
           onMapCreated: (controller) {
             MapUtils.applyMapStyle(

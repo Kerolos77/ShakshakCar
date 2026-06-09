@@ -30,6 +30,7 @@ class _TripMapViewState extends State<TripMapView> {
   final Completer<GoogleMapController> mapCompleter =
       Completer<GoogleMapController>();
   late final RideCubit _rideCubit;
+  bool _isCardCollapsed = false;
 
   @override
   void initState() {
@@ -61,7 +62,8 @@ class _TripMapViewState extends State<TripMapView> {
         if (state.actionStatus == RideActionStatus.success) {
           final hasRide = state.rides.any((r) => r.id == widget.ride.id);
           if (!hasRide) {
-            debugPrint("TripMapView: Ride ${widget.ride.id} is no longer in active rides (completed or cancelled), popping back to home.");
+            debugPrint(
+                "TripMapView: Ride ${widget.ride.id} is no longer in active rides (completed or cancelled), popping back to home.");
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
             }
@@ -84,9 +86,11 @@ class _TripMapViewState extends State<TripMapView> {
 
           if (updatedRide.status == 'arrived') {
             instructionsHeader = "وصلت للعميل";
-            instructionsBody = "العميل في انتظارك الآن. قم ببدء الرحلة عند ركوبه.";
+            instructionsBody =
+                "العميل في انتظارك الآن. قم ببدء الرحلة عند ركوبه.";
             navigationIcon = Icons.person_pin_circle_rounded;
-          } else if (updatedRide.status == 'started' || updatedRide.status == 'on_trip') {
+          } else if (updatedRide.status == 'started' ||
+              updatedRide.status == 'on_trip') {
             instructionsHeader = "متجه للوجهة";
             instructionsBody = updatedRide.destinationAddress;
             navigationIcon = Icons.navigation_rounded;
@@ -119,6 +123,10 @@ class _TripMapViewState extends State<TripMapView> {
                   ),
                   cars: const [],
                   driverLocation: state.currentDriverLocation,
+                  bottomPadding: _isCardCollapsed
+                      ? 110.h
+                      : MediaQuery.of(context).size.height * 0.35,
+                  isTripStarted: updatedRide.status == 'started' || updatedRide.status == 'on_trip',
                 ),
 
                 // floating Navigation Directions HUD (at the top)
@@ -131,11 +139,17 @@ class _TripMapViewState extends State<TripMapView> {
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 16.w, vertical: 12.h),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface.withOpacity(0.85),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withOpacity(0.85),
                           border: Border.all(
-                            color: Theme.of(context).dividerColor.withOpacity(0.15),
+                            color: Theme.of(context)
+                                .dividerColor
+                                .withOpacity(0.15),
                             width: 1.5,
                           ),
                           borderRadius: BorderRadius.circular(16.r),
@@ -145,7 +159,8 @@ class _TripMapViewState extends State<TripMapView> {
                             Container(
                               padding: EdgeInsets.all(10.r),
                               decoration: BoxDecoration(
-                                color: Styles.getPrimaryColor(context).withOpacity(0.1),
+                                color: Styles.getPrimaryColor(context)
+                                    .withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -161,12 +176,15 @@ class _TripMapViewState extends State<TripMapView> {
                                 children: [
                                   Text(
                                     instructionsHeader,
-                                    style: Styles.textStyle14Bold(context).copyWith(
+                                    style: Styles.textStyle14Bold(context)
+                                        .copyWith(
                                       color: Styles.getPrimaryColor(context),
                                     ),
                                   ),
                                   Text(
-                                    instructionsBody.isNotEmpty ? instructionsBody : "جاري تحديد المسار...",
+                                    instructionsBody.isNotEmpty
+                                        ? instructionsBody
+                                        : "جاري تحديد المسار...",
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: Styles.textStyle12SemiBold(context),
@@ -183,7 +201,7 @@ class _TripMapViewState extends State<TripMapView> {
 
                 // Speedometer Floating circular HUD
                 Positioned(
-                  bottom: 230.h,
+                  bottom: _isCardCollapsed ? 100.h : 230.h,
                   right: 16.w,
                   child: ClipOval(
                     child: BackdropFilter(
@@ -228,7 +246,7 @@ class _TripMapViewState extends State<TripMapView> {
 
                 // Simulation Toggle Button
                 Positioned(
-                  bottom: 310.h,
+                  bottom: _isCardCollapsed ? 180.h : 310.h,
                   right: 16.w,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(30.r),
@@ -242,24 +260,29 @@ class _TripMapViewState extends State<TripMapView> {
                             cubit.startTripLocationTracking();
                           } else {
                             final startLoc = state.currentDriverLocation ??
-                                LatLng(updatedRide.sourceLat, updatedRide.sourceLong);
+                                LatLng(updatedRide.sourceLat,
+                                    updatedRide.sourceLong);
                             final bool isHeadingToCustomer =
                                 updatedRide.status == 'pending' ||
-                                updatedRide.status == 'accepted' ||
-                                updatedRide.status == 'arrived';
+                                    updatedRide.status == 'accepted' ||
+                                    updatedRide.status == 'arrived';
                             final endLoc = isHeadingToCustomer
-                                ? LatLng(updatedRide.sourceLat, updatedRide.sourceLong)
-                                : LatLng(updatedRide.destinationLat, updatedRide.destinationLong);
+                                ? LatLng(updatedRide.sourceLat,
+                                    updatedRide.sourceLong)
+                                : LatLng(updatedRide.destinationLat,
+                                    updatedRide.destinationLong);
 
                             cubit.startSimulation(startLoc, endLoc);
                           }
                         },
                         child: Container(
-                          padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 14.w, vertical: 10.h),
                           decoration: BoxDecoration(
                             color: state.isSimulationActive
                                 ? Colors.red.withOpacity(0.85)
-                                : Styles.getPrimaryColor(context).withOpacity(0.85),
+                                : Styles.getPrimaryColor(context)
+                                    .withOpacity(0.85),
                             borderRadius: BorderRadius.circular(30.r),
                             border: Border.all(
                               color: Colors.white.withOpacity(0.2),
@@ -271,14 +294,16 @@ class _TripMapViewState extends State<TripMapView> {
                             children: [
                               Icon(
                                 state.isSimulationActive
-                                  ? Icons.stop_rounded
-                                  : Icons.play_arrow_rounded,
+                                    ? Icons.stop_rounded
+                                    : Icons.play_arrow_rounded,
                                 color: Colors.white,
                                 size: 18.r,
                               ),
                               SizedBox(width: 6.w),
                               Text(
-                                state.isSimulationActive ? "إيقاف المحاكاة" : "محاكاة الحركة",
+                                state.isSimulationActive
+                                    ? "إيقاف المحاكاة"
+                                    : "محاكاة الحركة",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 12.sp,
@@ -293,27 +318,144 @@ class _TripMapViewState extends State<TripMapView> {
                   ),
                 ),
 
-                // نفس الكارد الخارجي بالكامل - إعادة استخدام 100%
+                // Collapsible Bottom Card (Details Card)
                 Positioned(
-                  bottom: 16,
-                  left: 0,
-                  right: 0,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: DriverRidesListItem(
-                      key: ValueKey(updatedRide.id),
-                      ride: updatedRide,
-                      isOutstation: updatedRide.parcelWeight != null,
-                      isNew: isNew,
-                      showDetailsButton: false,
-                      showDismissButton: false,
-                    ),
-                  ),
+                  bottom: 16.h,
+                  left: 16.w,
+                  right: 16.w,
+                  child: _isCardCollapsed
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(24.r),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 20.w, vertical: 14.h),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surface
+                                    .withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(24.r),
+                                border: Border.all(
+                                  color: Theme.of(context)
+                                      .dividerColor
+                                      .withOpacity(0.15),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.15),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ],
+                              ),
+                              child: InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    _isCardCollapsed = false;
+                                  });
+                                },
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.info_outline_rounded,
+                                          color:
+                                              Styles.getPrimaryColor(context),
+                                          size: 24.r,
+                                        ),
+                                        SizedBox(width: 10.w),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              updatedRide.user?.name ??
+                                                  "العميل",
+                                              style: Styles.textStyle14Bold(
+                                                  context),
+                                            ),
+                                            Text(
+                                              "اضغط لعرض تفاصيل الرحلة كاملة",
+                                              style: Styles.textStyle10Regular(
+                                                      context)
+                                                  .copyWith(
+                                                color: Colors.grey.shade600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Icon(
+                                      Icons.keyboard_arrow_up_rounded,
+                                      color: Styles.getPrimaryColor(context),
+                                      size: 28.r,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Collapse Handle
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _isCardCollapsed = true;
+                                });
+                              },
+                              child: Container(
+                                width: 70.w,
+                                padding: EdgeInsets.symmetric(vertical: 6.h),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .surface
+                                      .withOpacity(0.9),
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(16.r)),
+                                  border: Border.all(
+                                    color: Theme.of(context)
+                                        .dividerColor
+                                        .withOpacity(0.15),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    color: Styles.getPrimaryColor(context),
+                                    size: 20.r,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            DriverRidesListItem(
+                              key: ValueKey(updatedRide.id),
+                              ride: updatedRide,
+                              isOutstation: updatedRide.parcelWeight != null,
+                              isNew: isNew,
+                              showDetailsButton: false,
+                              showDismissButton: false,
+                            ),
+                          ],
+                        ),
                 ),
 
-                if (updatedRide.status == 'started' || updatedRide.status == 'on_trip')
+                if (updatedRide.status == 'started' ||
+                    updatedRide.status == 'on_trip')
                   Positioned(
-                    bottom: 230.h,
+                    bottom: _isCardCollapsed ? 100.h : 230.h,
                     left: 16.w,
                     child: const SOSButton(),
                   ),

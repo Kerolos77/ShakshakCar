@@ -25,6 +25,11 @@ class Styles {
         fontWeight: FontWeight.w700,
         color: Theme.of(context).textTheme.bodyLarge?.color,
       );
+  static TextStyle textStyle10Regular(BuildContext context) => TextStyle(
+        fontSize: 10.sp,
+        fontWeight: FontWeight.w400,
+        color: Theme.of(context).textTheme.bodyLarge?.color,
+      );
 
   static TextStyle textStyle18SemiBold(BuildContext context) => TextStyle(
         fontSize: 18.sp,
