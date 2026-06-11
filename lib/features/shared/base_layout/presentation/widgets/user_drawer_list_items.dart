@@ -86,6 +86,16 @@ class UserDrawerListItems extends StatelessWidget {
             navigateTo(context, Routes.settingsView);
           },
         ),
+        CustomDrawerItem(
+          title: "توثيق الحساب (الهوية)",
+          icon: Icons.verified_user_rounded,
+          isSelected: selectedIndex == 15,
+          onTap: () {
+            Scaffold.of(context).closeDrawer();
+            cubit.changeSelectedDrawerItem(15);
+            navigateTo(context, Routes.userIdentityVerificationView);
+          },
+        ),
         16.ph,
         _buildSectionLabel(context, S.of(context).workWithUs),
         CustomDrawerItem(

@@ -20,6 +20,9 @@ import 'package:shakshak/features/shared/payment/presentation/view_models/paymen
 import 'package:shakshak/features/shared/payment/presentation/view_models/payment_states.dart';
 import 'package:shakshak/features/shared/authentication/presentation/view_models/auth_cubit/auth_cubit.dart';
 import 'package:shakshak/core/network/local/cache_helper.dart';
+import 'package:shakshak/core/constants/app_const.dart';
+import 'package:shakshak/core/network/dio_helper/dio_helper.dart';
+import 'package:shakshak/core/resources/app_colors.dart';
 
 import 'package:shakshak/core/utils/google_maps_resolver.dart';
 
@@ -38,9 +41,39 @@ class _BookRideState extends State<BookRide> {
   GoogleMapController? mapController;
   int selectedServiceIndex = -1;
 
+  bool _isVerificationChecked = false;
+  bool _isUserVerified = false;
+
+  Future<void> _checkVerificationStatus() async {
+    try {
+      final token = CacheHelper.getData(key: AppConstant.kToken);
+      final response = await DioHelper.getData(
+        url: 'user/identity-status',
+        token: token,
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        final resData = response.data['data'];
+        if (resData != null) {
+          setState(() {
+            _isUserVerified = resData['verification_status'] == 'verified';
+            _isVerificationChecked = true;
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error checking verification status in BookRide: $e");
+    }
+    setState(() {
+      _isUserVerified = false;
+      _isVerificationChecked = true;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    _checkVerificationStatus();
     selectedPaymentMethod = CacheHelper.getData(key: 'default_payment_method') ?? 'cash';
     useWallet = CacheHelper.getData(key: 'use_wallet') ?? false;
     if (selectedPaymentMethod == 'wallet') {
@@ -309,6 +342,20 @@ class _BookRideState extends State<BookRide> {
                       onConfirmTap: () {
                         if (state is NewRideRequestLoading) return;
 
+                        if (!_isVerificationChecked) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("جاري التحقق من حالة حسابك... يرجى المحاولة بعد قليل."),
+                            ),
+                          );
+                          return;
+                        }
+
+                        if (!_isUserVerified) {
+                          _showVerificationRequiredDialog(context);
+                          return;
+                        }
+
                         if (selectedServiceIndex != -1) {
                           if (userHomeCubit.servicesDetails.isNotEmpty) {
                             var selectedService = userHomeCubit
@@ -424,6 +471,45 @@ class _BookRideState extends State<BookRide> {
             child: const Text(
               "تأكيد الإلغاء",
               style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showVerificationRequiredDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text(
+          "توثيق الهوية مطلوب",
+          textAlign: TextAlign.right,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          "عذراً، يجب توثيق هويتك أولاً وحسابك الشخصي لتتمكن من إرسال الشحنات وحجز الرحلات.",
+          textAlign: TextAlign.right,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+            },
+            child: const Text("إلغاء"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext); // Close dialog
+              navigateTo(context, Routes.userIdentityVerificationView).then((_) {
+                // Re-check verification status when returning
+                _checkVerificationStatus();
+              });
+            },
+            child: const Text(
+              "توثيق الآن",
+              style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold),
             ),
           ),
         ],
