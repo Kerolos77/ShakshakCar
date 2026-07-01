@@ -17,6 +17,7 @@ import 'package:shakshak/core/network/dio_helper/dio_helper.dart';
 import 'package:shakshak/features/shared/base_layout/presentation/views/base_layout_view.dart';
 import 'package:shakshak/features/driver/online_registration/widgets/custom_image_picker_widget.dart';
 import 'package:shakshak/core/extentions/glopal_extentions.dart';
+import 'package:shakshak/generated/l10n.dart';
 
 class UserIdentityVerificationView extends StatefulWidget {
   const UserIdentityVerificationView({super.key});
@@ -99,8 +100,8 @@ class _UserIdentityVerificationViewState
 
     if (_frontImage == null || _backImage == null || _selfieImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("يرجى التقاط الصور الثلاث المطلوبة أولاً!"),
+        SnackBar(
+          content: Text(S.of(context).captureThreeImagesWarning),
           backgroundColor: Colors.orange,
         ),
       );
@@ -151,8 +152,8 @@ class _UserIdentityVerificationViewState
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("تهانينا! تم توثيق حسابك بالكامل بنجاح."),
+            SnackBar(
+              content: Text(S.of(context).verificationSuccessToast),
               backgroundColor: Colors.green,
             ),
           );
@@ -162,11 +163,11 @@ class _UserIdentityVerificationViewState
             _verificationStatus = 'failed';
             _rejectionReason = (resData != null && resData['rejection_reason'] != null)
                 ? resData['rejection_reason']
-                : 'فشل فحص المستندات بالذكاء الاصطناعي.';
+                : S.of(context).aiScanFailed;
           });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("لم يتم قبول التوثيق: $_rejectionReason"),
+              content: Text(S.of(context).verificationRejectedToast(_rejectionReason)),
               backgroundColor: AppColors.redColor,
             ),
           );
@@ -174,7 +175,7 @@ class _UserIdentityVerificationViewState
       }
     } catch (e) {
       debugPrint("Error sending identity verification: $e");
-      String errorMsg = "حدث خطأ أثناء الاتصال بالخادم، يرجى المحاولة لاحقاً.";
+      String errorMsg = S.of(context).serverErrorToast;
       
       if (e is DioException) {
         if (e.response?.data != null && e.response?.data['message'] != null) {
@@ -198,7 +199,7 @@ class _UserIdentityVerificationViewState
   @override
   Widget build(BuildContext context) {
     return BaseLayoutView(
-      title: "توثيق الهوية بالذكاء الاصطناعي",
+      title: S.of(context).identityVerificationTitle,
       body: _isLoadingStatus
           ? Center(
               child: SpinKitDoubleBounce(
@@ -240,12 +241,12 @@ class _UserIdentityVerificationViewState
           ),
           20.ph,
           Text(
-            "حسابك موثق ومقبول",
+            S.of(context).verifiedStatusTitle,
             style: Styles.textStyle22Bold(context).copyWith(color: Colors.green),
           ),
           10.ph,
           Text(
-            "تمت مطابقة مستنداتك وصورتك بنجاح بواسطة الذكاء الاصطناعي.",
+            S.of(context).verifiedStatusSubtitle,
             textAlign: TextAlign.center,
             style: Styles.textStyle14(context).copyWith(color: AppColors.greyColor),
           ),
@@ -261,21 +262,21 @@ class _UserIdentityVerificationViewState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoDetail("الرقم القومي المستخرج", _verifiedIdNumber),
+                _buildInfoDetail(S.of(context).extractedIdNumber, _verifiedIdNumber),
                 if (_verifiedName.isNotEmpty) ...[
                   const Divider(),
-                  _buildInfoDetail("الاسم بالكامل (عربي)", _verifiedName),
+                  _buildInfoDetail(S.of(context).extractedFullName, _verifiedName),
                 ],
                 if (_faceSimilarityScore > 0) ...[
                   const Divider(),
-                  _buildInfoDetail("نسبة مطابقة ملامح الوجه", "$_faceSimilarityScore%"),
+                  _buildInfoDetail(S.of(context).faceSimilarityScore, "$_faceSimilarityScore%"),
                 ],
               ],
             ),
           ),
           50.ph,
           CustomButton(
-            text: "العودة للرئيسية",
+            text: S.of(context).backToHome,
             onTap: () {
               navigatePop(context);
             },
@@ -315,7 +316,7 @@ class _UserIdentityVerificationViewState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "تم رفض طلب التوثيق السابق:",
+                          S.of(context).previousVerificationRejected,
                           style: Styles.textStyle14Bold(context)
                               .copyWith(color: AppColors.redColor),
                         ),
@@ -333,18 +334,18 @@ class _UserIdentityVerificationViewState
             ),
 
           Text(
-            "توثيق الهوية مطلوب لإرسال الشحنات",
+            S.of(context).verificationRequiredTitle,
             style: Styles.textStyle18Bold(context),
           ),
           8.ph,
           Text(
-            "يرجى تصوير وجه وبظهر بطاقتك الشخصية وصورة سيلفي حية لتفعيل حسابك فورياً.",
+            S.of(context).verificationRequiredInstructions,
             style: Styles.textStyle14(context).copyWith(color: AppColors.greyColor),
           ),
           24.ph,
 
           CustomTextField(
-            hint: "الرقم القومي (14 رقم)",
+            hint: S.of(context).nationalIdHint,
             keyType: TextInputType.number,
             controller: _nIDController,
             inputFormatters: [
@@ -353,10 +354,10 @@ class _UserIdentityVerificationViewState
             ],
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return "يرجى إدخال الرقم القومي";
+                return S.of(context).nationalIdRequired;
               }
               if (value.length != 14) {
-                return "يجب أن يتكون الرقم القومي من 14 رقماً";
+                return S.of(context).nationalIdMustBe14Digits;
               }
               return null;
             },
@@ -365,7 +366,7 @@ class _UserIdentityVerificationViewState
 
           // cameraOnly is false during testing to allow gallery/file uploads
           CustomImagePickerWidget(
-            title: "1. وجه بطاقة الرقم القومي",
+            title: S.of(context).frontIdCardTitle,
             cameraOnly: false,
             onImagePicked: (file) {
               setState(() {
@@ -377,7 +378,7 @@ class _UserIdentityVerificationViewState
           20.ph,
 
           CustomImagePickerWidget(
-            title: "2. ظهر بطاقة الرقم القومي",
+            title: S.of(context).backIdCardTitle,
             cameraOnly: false,
             onImagePicked: (file) {
               setState(() {
@@ -389,7 +390,7 @@ class _UserIdentityVerificationViewState
           20.ph,
 
           CustomImagePickerWidget(
-            title: "3. التقاط صورة شخصية (سيلفي)",
+            title: S.of(context).selfieCaptureTitle,
             cameraOnly: false,
             onImagePicked: (file) {
               setState(() {
@@ -401,7 +402,7 @@ class _UserIdentityVerificationViewState
           30.ph,
 
           CustomButton(
-            text: "بدء التحقق والتوثيق الفوري",
+            text: S.of(context).startVerificationButton,
             onTap: _submitForVerification,
           ),
           20.ph,
@@ -427,13 +428,13 @@ class _UserIdentityVerificationViewState
             ),
             24.ph,
             Text(
-              "جاري تحليل الصور والتحقق بالذكاء الاصطناعي...",
+              S.of(context).analyzingImagesProgress,
               textAlign: TextAlign.center,
               style: Styles.textStyle16Bold(context).copyWith(color: Colors.white),
             ),
             12.ph,
             Text(
-              "يرجى الانتظار من 5 لـ 10 ثوانٍ ولا تقم بإغلاق الصفحة لحين الانتهاء.",
+              S.of(context).pleaseWaitWarning,
               textAlign: TextAlign.center,
               style: Styles.textStyle14(context).copyWith(color: Colors.white70),
             ),

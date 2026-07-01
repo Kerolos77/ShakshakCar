@@ -18,6 +18,8 @@ class CustomDropDown extends StatefulWidget {
   final String? Function(String?)? validator;
   final Widget? prefix;
   final bool enabled;
+  final Color? errorBorderColor;
+  final Color? errorTextColor;
 
   const CustomDropDown({
     super.key,
@@ -30,6 +32,8 @@ class CustomDropDown extends StatefulWidget {
     this.label,
     this.prefix,
     this.enabled = true,
+    this.errorBorderColor,
+    this.errorTextColor,
   });
 
   @override
@@ -153,8 +157,13 @@ class _CustomDropDownState extends State<CustomDropDown> {
                 enabledBorder: buildOutlineInputBorder(),
                 border: buildOutlineInputBorder(),
                 disabledBorder: buildOutlineInputBorder(),
+                errorStyle: const TextStyle(fontSize: 0, height: 0),
                 errorBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: AppColors.redColor),
+                  borderSide: BorderSide(color: widget.errorBorderColor ?? AppColors.redColor, width: 1.0),
+                  borderRadius: BorderRadius.circular(widget.borderRadius!.r),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: widget.errorBorderColor ?? AppColors.redColor, width: 1.2),
                   borderRadius: BorderRadius.circular(widget.borderRadius!.r),
                 ),
               ),

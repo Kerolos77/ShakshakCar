@@ -268,7 +268,10 @@ class _BookRideState extends State<BookRide> {
             navigateAndFinish(context, Routes.offersView,
                 extra: OffersViewArgs(newRideData: state.newRideModel));
           } else if (state is NewRideRequestActiveTripFound) {
-            _showActiveTripDialog(context, state.activeOrderId, state.message);
+            final msg = state.message == 'already_has_active_trip'
+                ? S.of(context).alreadyHasActiveTrip
+                : state.message;
+            _showActiveTripDialog(context, state.activeOrderId, msg);
           } else if (state is CancelOrderLoading) {
             // Optional: show loading overlay
           } else if (state is CancelOrderSuccess) {
@@ -344,8 +347,8 @@ class _BookRideState extends State<BookRide> {
 
                         if (!_isVerificationChecked) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("جاري التحقق من حالة حسابك... يرجى المحاولة بعد قليل."),
+                            SnackBar(
+                              content: Text(S.of(context).checkingAccountStatus),
                             ),
                           );
                           return;
@@ -443,7 +446,7 @@ class _BookRideState extends State<BookRide> {
                 Navigator.of(dialogContext).pop();
                 context.read<UserHomeCubit>().getRideDetails(activeOrderId);
               },
-              child: const Text("كمل رحلتك"),
+              child: Text(S.of(context).resumeYourTrip),
             ),
           ],
         ),
@@ -455,22 +458,22 @@ class _BookRideState extends State<BookRide> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text("تأكيد الإلغاء"),
-        content: const Text("هل أنت متأكد أنك تريد إلغاء هذه الرحلة؟"),
+        title: Text(S.of(context).confirmCancellation),
+        content: Text(S.of(context).confirmCancelTripMsg),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("رجوع"),
+            child: Text(S.of(context).goBack),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(dialogContext); // Close confirmation dialog
-              Navigator.pop(context); // Close the ActiveTripDialog as well
+              Navigator.pop(dialogContext);
+              Navigator.pop(context);
               context.read<UserHomeCubit>().cancelOrder(orderId: orderId);
             },
-            child: const Text(
-              "تأكيد الإلغاء",
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              S.of(context).confirmCancellation,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -483,13 +486,13 @@ class _BookRideState extends State<BookRide> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        title: const Text(
-          "توثيق الهوية مطلوب",
+        title: Text(
+          S.of(context).identityRequiredDialogTitle,
           textAlign: TextAlign.right,
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        content: const Text(
-          "عذراً، يجب توثيق هويتك أولاً وحسابك الشخصي لتتمكن من إرسال الشحنات وحجز الرحلات.",
+        content: Text(
+          S.of(context).identityRequiredDialogMsg,
           textAlign: TextAlign.right,
         ),
         actions: [
@@ -497,19 +500,18 @@ class _BookRideState extends State<BookRide> {
             onPressed: () {
               Navigator.pop(dialogContext);
             },
-            child: const Text("إلغاء"),
+            child: Text(S.of(context).cancel),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(dialogContext); // Close dialog
+              Navigator.pop(dialogContext);
               navigateTo(context, Routes.userIdentityVerificationView).then((_) {
-                // Re-check verification status when returning
                 _checkVerificationStatus();
               });
             },
-            child: const Text(
-              "توثيق الآن",
-              style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold),
+            child: Text(
+              S.of(context).verifyNow,
+              style: const TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold),
             ),
           ),
         ],

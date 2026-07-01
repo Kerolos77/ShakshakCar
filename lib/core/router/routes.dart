@@ -31,6 +31,8 @@ class Routes {
   static const String driveDetailsView = "/driveDetailsView";
   static const String bookRide = "/bookRide";
   static const String userIdentityVerificationView = "/userIdentityVerificationView";
+  static const String shipmentRequestView = "/shipmentRequestView";
+  static const String shipmentTermsView = "/shipmentTermsView";
 
   // --------------------------------- Driver ---------------------------------
 

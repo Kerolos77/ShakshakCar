@@ -36,9 +36,12 @@ class _UserStoreContent extends StatelessWidget {
       body: BlocListener<UserStoreCubit, DriverStoreState>(
         listener: (context, state) {
           if (state is DriverStoreBuySuccess) {
+            final msg = state.message == 'package_purchased_success'
+                ? S.of(context).packagePurchasedSuccess
+                : state.message;
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                  content: Text(state.message),
+                  content: Text(msg),
                   backgroundColor: AppColors.primaryColor),
             );
             context.read<AuthCubit>().getProfile(); // refresh points

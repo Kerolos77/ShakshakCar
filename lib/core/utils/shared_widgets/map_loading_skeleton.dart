@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shakshak/generated/l10n.dart';
 
 class MapLoadingSkeleton extends StatefulWidget {
   final String? loadingText;
@@ -59,7 +60,7 @@ class _MapLoadingSkeletonState extends State<MapLoadingSkeleton>
               ),
               const SizedBox(height: 12),
               Text(
-                widget.loadingText ?? 'جارٍ تحميل الخريطة...',
+                widget.loadingText ?? S.of(context).loadingMap,
                 style: TextStyle(color: textColor, fontSize: 14),
               ),
             ],

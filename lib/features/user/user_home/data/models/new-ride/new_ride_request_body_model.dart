@@ -14,6 +14,13 @@ class NewRideRequestBodyModel {
   final int numberOfPassenger;
   final bool? femaleOnly;
   final int? savedCardId;
+  
+  // Shipment fields
+  final String? receiverName;
+  final String? receiverPhone;
+  final String? parcelWeight;
+  final String? parcelDimension;
+  final String? parcelImagePath;
 
   NewRideRequestBodyModel({
     required this.serviceId,
@@ -31,6 +38,11 @@ class NewRideRequestBodyModel {
     required this.numberOfPassenger,
     this.femaleOnly,
     this.savedCardId,
+    this.receiverName,
+    this.receiverPhone,
+    this.parcelWeight,
+    this.parcelDimension,
+    this.parcelImagePath,
   });
 
   /// ✅ From API
@@ -51,10 +63,15 @@ class NewRideRequestBodyModel {
       numberOfPassenger: int.parse(json['number_of_passenger'].toString()),
       femaleOnly: json['is_female_only']?.toString() == '1',
       savedCardId: json['saved_card_id'] != null ? int.tryParse(json['saved_card_id'].toString()) : null,
+      receiverName: json['receiver_name'],
+      receiverPhone: json['receiver_phone'],
+      parcelWeight: json['parcel_weight'],
+      parcelDimension: json['parcel_dimension'],
+      parcelImagePath: json['parcel_image'],
     );
   }
 
-  /// ✅ To API
+  /// ✅ To API (JSON)
   Map<String, dynamic> toJson() {
     return {
       'service_id': serviceId,
@@ -72,6 +89,25 @@ class NewRideRequestBodyModel {
       'number_of_passenger': numberOfPassenger,
       'is_female_only': femaleOnly == true ? 1 : 0,
       if (savedCardId != null) 'saved_card_id': savedCardId,
+      if (receiverName != null) 'receiver_name': receiverName,
+      if (receiverPhone != null) 'receiver_phone': receiverPhone,
+      if (parcelWeight != null) 'parcel_weight': parcelWeight,
+      if (parcelDimension != null) 'parcel_dimension': parcelDimension,
+      // Note: parcel_image cannot be sent as string in JSON for file upload. Use toFormData().
     };
+  }
+
+  /// ✅ To API (FormData) for file uploads
+  Future<dynamic> toFormData() async {
+    final Map<String, dynamic> data = toJson();
+    
+    // Create FormData from the existing JSON map
+    // We must use dynamic to avoid importing Dio here if it's not imported,
+    // but typically we can just return a Map and let the repo handle FormData conversion.
+    // Let's return a Map, but include the file path if present, and repo handles the actual MultipartFile.
+    if (parcelImagePath != null) {
+      data['parcel_image_path'] = parcelImagePath; // Repo will read this
+    }
+    return data;
   }
 }

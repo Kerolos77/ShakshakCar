@@ -8,6 +8,10 @@ import 'package:shakshak/core/router/routes.dart';
 import 'custom_drawer_item.dart';
 import 'package:shakshak/core/extentions/glopal_extentions.dart';
 import 'package:shakshak/core/utils/styles.dart';
+import 'package:shakshak/core/utils/helpers/local_auth_helper.dart';
+import 'package:shakshak/core/network/dio_helper/dio_helper.dart';
+import 'package:shakshak/core/network/local/cache_helper.dart';
+import 'package:shakshak/core/constants/app_const.dart';
 
 class UserDrawerListItems extends StatelessWidget {
   const UserDrawerListItems({
@@ -68,7 +72,7 @@ class UserDrawerListItems extends StatelessWidget {
           },
         ),
         CustomDrawerItem(
-          title: "متجر الباقات",
+          title: S.of(context).packagesStore,
           icon: Icons.store_mall_directory_rounded,
           isSelected: false,
           onTap: () {
@@ -87,13 +91,60 @@ class UserDrawerListItems extends StatelessWidget {
           },
         ),
         CustomDrawerItem(
-          title: "توثيق الحساب (الهوية)",
+          title: S.of(context).verifyAccount,
           icon: Icons.verified_user_rounded,
           isSelected: selectedIndex == 15,
-          onTap: () {
+          onTap: () async {
+            final reason = S.of(context).authReason;
+            final title = S.of(context).authTitle;
+            final cancel = S.of(context).cancel;
+            
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => const Center(child: CircularProgressIndicator()),
+            );
+            
+            bool isVerified = false;
+            try {
+              final token = CacheHelper.getData(key: AppConstant.kToken);
+              final response = await DioHelper.getData(
+                url: 'user/identity-status',
+                token: token,
+              );
+              
+              if (response.statusCode == 200 && response.data != null) {
+                 final resData = response.data['data'];
+                 if (resData != null && resData['verification_status'] == 'verified') {
+                   isVerified = true;
+                 }
+              }
+            } catch (e) {
+              // Ignore error and fallback to local auth
+            }
+            
+            // ignore: use_build_context_synchronously
+            Navigator.pop(context); // hide loading
+            // ignore: use_build_context_synchronously
             Scaffold.of(context).closeDrawer();
-            cubit.changeSelectedDrawerItem(15);
-            navigateTo(context, Routes.userIdentityVerificationView);
+            
+            if (isVerified) {
+              cubit.changeSelectedDrawerItem(15);
+              // ignore: use_build_context_synchronously
+              navigateTo(context, Routes.userIdentityVerificationView);
+            } else {
+              final bool didAuthenticate = await LocalAuthHelper.authenticate(
+                reason: reason,
+                title: title,
+                cancel: cancel,
+              );
+              
+              if (didAuthenticate) {
+                cubit.changeSelectedDrawerItem(15);
+                // ignore: use_build_context_synchronously
+                navigateTo(context, Routes.userIdentityVerificationView);
+              }
+            }
           },
         ),
         16.ph,

@@ -1,0 +1,23 @@
+info:
+  name: private driver shipping
+  type: websocket
+  seq: 8
+
+websocket:
+  url: "{{real_time_url}}"
+  message:
+    type: json
+    data: |-
+      {
+          "event":"pusher:subscribe",
+          "data":
+          {
+              "channel":"private-driver-shipping.69",
+               "auth": "key:63f69a670c68272ad28b9cdb60c22654e6b7403d599ec4f33ee79716d2ba1a74"
+          }
+      }
+  auth: inherit
+
+settings:
+  timeout: 0
+  keepAliveInterval: 0

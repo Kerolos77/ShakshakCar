@@ -85,7 +85,7 @@ class UserHomeCubit extends Cubit<UserHomeState> {
           TripStorageService.saveActiveTripId(success.id);
           emit(NewRideRequestActiveTripFound(
             activeOrderId: success.id,
-            message: "لديك رحلة جارية بالفعل",
+            message: 'already_has_active_trip',
             activeTrip: success,
           ));
         } else {

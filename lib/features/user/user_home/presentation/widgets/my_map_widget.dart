@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:shakshak/generated/l10n.dart';
 
 import 'package:shakshak/features/user/user_home/presentation/view_models/location/location_cubit.dart';
 
@@ -171,7 +172,7 @@ class _MapLoadingSkeletonState extends State<_MapLoadingSkeleton>
                   color: Theme.of(context).hintColor.withOpacity(0.5)),
               const SizedBox(height: 12),
               Text(
-                'جارٍ تحميل الخريطة...',
+                S.of(context).loadingMap,
                 style:
                     TextStyle(color: Theme.of(context).hintColor, fontSize: 14),
               ),

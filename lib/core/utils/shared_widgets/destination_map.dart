@@ -518,7 +518,7 @@ class _UserMapWidgetState extends State<DestinationMapWidget> {
                     ),
                     8.pw,
                     Text(
-                      'جارٍ تحميل المسار...',
+                      S.of(context).loadingRoute,
                       style: TextStyle(color: Colors.white, fontSize: 12.sp),
                     ),
                   ],

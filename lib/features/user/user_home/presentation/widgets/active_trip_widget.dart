@@ -121,7 +121,7 @@ class ActiveTripWidget extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text("كمل الرحلة"),
+                          child: Text(S.of(context).continueTripBtn),
                         ),
                       ),
                     ],
