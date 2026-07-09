@@ -49,6 +49,49 @@ class UserDrawerListItems extends StatelessWidget {
             navigateTo(context, Routes.ridesView);
           },
         ),
+        CustomDrawerItem(
+          title: S.of(context).shipPackage,
+          icon: Icons.local_shipping_rounded,
+          isSelected: selectedIndex == 11,
+          onTap: () async {
+            Scaffold.of(context).closeDrawer();
+            
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => const Center(child: CircularProgressIndicator()),
+            );
+            
+            bool isVerified = false;
+            try {
+              final token = CacheHelper.getData(key: AppConstant.kToken);
+              final response = await DioHelper.getData(
+                url: 'user/identity-status',
+                token: token,
+              );
+              
+              if (response.statusCode == 200 && response.data != null) {
+                 final resData = response.data['data'];
+                 if (resData != null && resData['verification_status'] == 'verified') {
+                   isVerified = true;
+                 }
+              }
+            } catch (e) {
+              // Ignore API error
+            }
+            
+            // ignore: use_build_context_synchronously
+            Navigator.pop(context); // hide loading
+            
+            if (isVerified) {
+              // ignore: use_build_context_synchronously
+              navigateTo(context, Routes.shipmentRequestView);
+            } else {
+              // ignore: use_build_context_synchronously
+              navigateTo(context, Routes.userIdentityVerificationView);
+            }
+          },
+        ),
         16.ph,
         _buildSectionLabel(context, S.of(context).accountAndWallet),
         CustomDrawerItem(

@@ -505,5 +505,10 @@
   "shipmentRequestSuccess": "Shipment request sent successfully!",
   "selectPickupAndDropoff": "Please select pickup and drop-off locations",
   "selectPackageWeight": "Please select package weight",
-  "uploadPackageImageRequired": "Please upload or take a photo of the package"
+  "uploadPackageImageRequired": "Please upload or take a photo of the package",
+  "electronicPayment": "Electronic Payment",
+  "packagesStoreTitle": "Driver Packages Store",
+  "femaleOnlyRequests": "Female Only Requests",
+  "femaleOnlyRequestsSub": "Receive trips only from female riders",
+  "payment": "Payment"
 }

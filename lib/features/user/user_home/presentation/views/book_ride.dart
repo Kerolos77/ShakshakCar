@@ -40,6 +40,7 @@ class _BookRideState extends State<BookRide> {
       Completer<GoogleMapController>();
   GoogleMapController? mapController;
   int selectedServiceIndex = -1;
+  bool? _lastIsInCity;
 
   bool _isVerificationChecked = false;
   bool _isUserVerified = false;
@@ -317,6 +318,10 @@ class _BookRideState extends State<BookRide> {
                       );
                     }
                     bool isInCity = distance <= 100;
+                    if (_lastIsInCity != isInCity) {
+                      _lastIsInCity = isInCity;
+                      selectedServiceIndex = -1;
+                    }
                     return BookRideSheetContent(
                       isInCity: isInCity,
                       scrollController: scrollController,

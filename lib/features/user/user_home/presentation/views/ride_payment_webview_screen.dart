@@ -132,7 +132,7 @@ class _RidePaymentWebViewScreenState extends State<RidePaymentWebViewScreen> {
           elevation: 0,
           backgroundColor: AppColors.primaryColor,
           title: Text(
-            S.of(context).pay,
+            S.of(context).electronicPayment,
             style: const TextStyle(
               color: Colors.white,
             ),

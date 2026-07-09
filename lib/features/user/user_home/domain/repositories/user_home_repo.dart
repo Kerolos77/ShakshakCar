@@ -19,6 +19,8 @@ abstract class UserHomeRepo {
 
   Future<Either<Failure, ServicesEntity>> getOutCityServices();
 
+  Future<Either<Failure, ServicesEntity>> getShippingServices();
+
   Future<Either<Failure, RideModel>> getRides({required int inCity});
 
   Future<Either<Failure, AcceptOfferEntity>> acceptOffer({

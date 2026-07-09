@@ -113,6 +113,7 @@ class MyApp extends StatelessWidget {
                 getCaptionsUseCase: sl(),
                 getInCityServicesUseCase: sl(),
                 getOutCityServicesUseCase: sl(),
+                getShippingServicesUseCase: sl(),
                 acceptOfferUseCase: sl(),
                 denyOfferUseCase: sl(),
                 cancelOrderUseCase: sl(),

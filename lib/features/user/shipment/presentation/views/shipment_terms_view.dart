@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shakshak/core/extentions/glopal_extentions.dart';
 import 'package:shakshak/core/resources/app_colors.dart';
+import 'package:shakshak/generated/l10n.dart';
 
 class ShipmentTermsView extends StatelessWidget {
   const ShipmentTermsView({super.key});
@@ -10,7 +11,7 @@ class ShipmentTermsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isArabic = Localizations.localeOf(context).languageCode == 'ar';
 
-    final String title = isArabic ? 'شروط وأحكام الشحن' : 'Shipping Terms & Conditions';
+    final String title = S.of(context).termsLink;
 
     final List<Map<String, dynamic>> arTerms = [
       {

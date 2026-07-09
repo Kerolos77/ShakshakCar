@@ -28,7 +28,7 @@ class _UserStoreContent extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          S.of(context).packagesStore,
+          S.of(context).packagesStoreTitle,
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.sp),
         ),
         centerTitle: true,

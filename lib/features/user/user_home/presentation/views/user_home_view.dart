@@ -45,7 +45,7 @@ class _UserHomeViewState extends State<UserHomeView> {
     context.read<UserHomeCubit>().getCaptions();
     context.read<SavedPlacesCubit>().fetchSavedPlaces();
     context.read<UserHomeCubit>().checkActiveTrip();
-    context.read<UserHomeCubit>().getServices(true); // Fetch ride types
+    context.read<UserHomeCubit>().getServices('rides'); // Fetch ride types
     context.read<AuthCubit>().getProfile(); // Fetch fresh user data
   }
 

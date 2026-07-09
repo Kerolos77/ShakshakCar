@@ -71,6 +71,22 @@ class UserHomeRepoImp implements UserHomeRepo {
   }
 
   @override
+  Future<Either<Failure, ServicesEntity>> getShippingServices() async {
+    try {
+      var data = await DioHelper.getData(
+        url: ApiConstant.getShippingServicesUrl,
+        token: CacheHelper.getData(key: AppConstant.kToken),
+      );
+      return right(ServicesModel.fromJson(data.data));
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, RideModel>> getRides({required int inCity}) async {
     try {
       var data = await DioHelper.getData(

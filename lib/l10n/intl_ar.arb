@@ -890,5 +890,10 @@
   "shipmentRequestSuccess": "تم إرسال طلب الشحن بنجاح",
   "selectPickupAndDropoff": "يرجى تحديد مواقع الاستلام والتسليم",
   "selectPackageWeight": "يرجى تحديد وزن الشحنة",
-  "uploadPackageImageRequired": "يرجى إرفاق صورة الشحنة"
+  "uploadPackageImageRequired": "يرجى إرفاق صورة الشحنة",
+  "electronicPayment": "الدفع الإلكتروني",
+  "packagesStoreTitle": "متجر باقات السائقين",
+  "femaleOnlyRequests": "طلبات النساء فقط",
+  "femaleOnlyRequestsSub": "استقبال الرحلات من الإناث فقط",
+  "payment": "الدفع"
 }

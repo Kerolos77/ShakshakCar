@@ -30,6 +30,12 @@ class ShipmentRequestView extends StatefulWidget {
 }
 
 class _ShipmentRequestViewState extends State<ShipmentRequestView> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<UserHomeCubit>().getServices('shipping');
+  }
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   // Global Keys for smooth scrolling

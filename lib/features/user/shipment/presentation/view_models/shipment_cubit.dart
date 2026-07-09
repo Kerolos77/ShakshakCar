@@ -117,6 +117,11 @@ class ShipmentCubit extends Cubit<ShipmentState> {
       return;
     }
 
+    if (userHomeCubit.servicesDetails.isEmpty) {
+      emit(ShipmentValidationError(message: S.of(context).errorOccurred));
+      return;
+    }
+
     // Find the shipping service from UserHomeCubit
     final shippingService = userHomeCubit.servicesDetails.firstWhere(
       (s) => s.service.serviceType == 'shipping',

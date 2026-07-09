@@ -25,6 +25,7 @@ import 'package:shakshak/features/user/user_home/domain/usecases/get_captions_us
 import 'package:shakshak/features/user/user_home/domain/usecases/get_in_city_services_usecase.dart';
 import 'package:shakshak/features/user/user_home/domain/usecases/get_nearby_drivers_usecase.dart';
 import 'package:shakshak/features/user/user_home/domain/usecases/get_out_city_services_usecase.dart';
+import 'package:shakshak/features/user/user_home/domain/usecases/get_shipping_services_usecase.dart';
 import 'package:shakshak/features/user/user_home/domain/usecases/get_price_usecase.dart';
 import 'package:shakshak/features/user/user_home/domain/usecases/get_rides_usecase.dart';
 import 'package:shakshak/features/user/user_home/domain/usecases/new_ride_request_usecase.dart';
@@ -154,6 +155,8 @@ class ServiceLocator {
         () => GetNearbyDriversUseCase(sl()));
     sl.registerLazySingleton<GetOutCityServicesUseCase>(
         () => GetOutCityServicesUseCase(sl()));
+    sl.registerLazySingleton<GetShippingServicesUseCase>(
+        () => GetShippingServicesUseCase(sl()));
     sl.registerLazySingleton<GetPriceUseCase>(() => GetPriceUseCase(sl()));
     sl.registerLazySingleton<GetRidesUseCase>(() => GetRidesUseCase(sl()));
     sl.registerLazySingleton<NewRideRequestUseCase>(
