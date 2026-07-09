@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shakshak/core/resources/app_colors.dart';
 import 'package:shakshak/core/utils/styles.dart';
 import 'package:shakshak/core/utils/shared_widgets/custom_app_bar.dart';
+import 'package:shakshak/generated/l10n.dart';
 
 class NotificationDetailsView extends StatelessWidget {
   final String title;
@@ -23,7 +24,7 @@ class NotificationDetailsView extends StatelessWidget {
         child: Container(
           color: AppColors.primaryColor,
           child: SafeArea(
-            child: const CustomAppBar(title: 'الإشعارات'),
+            child: CustomAppBar(title: S.of(context).notifications),
           ),
         ),
       ),

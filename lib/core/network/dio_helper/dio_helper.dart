@@ -151,6 +151,31 @@ DATA: ${e.response?.data}
     );
   }
 
+  static Future<Response> postFormData({
+    required String url,
+    Map<String, dynamic>? query,
+    required FormData data,
+    String? token,
+  }) async {
+    dio!.options.headers = {
+      'Accept': 'application/json',
+      'lang': AppConstant.currentLanguage,
+      if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+    };
+
+    return await dio!.post(
+      url,
+      queryParameters: query,
+      data: data,
+      options: Options(
+        followRedirects: false,
+        validateStatus: (status) {
+          return status != null && status < 500;
+        },
+      ),
+    );
+  }
+
   static Future<Response> patchData({
     required String url,
     Map<String, dynamic>? query,

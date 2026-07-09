@@ -9,6 +9,8 @@ import 'package:shakshak/core/services/real_time/realtime_manager.dart';
 import 'package:shakshak/core/services/service_locator.dart';
 import 'package:shakshak/core/services/trip_storage_service.dart';
 import 'package:shakshak/core/usecases/base_usecase.dart';
+import 'package:dartz/dartz.dart';
+import 'package:shakshak/features/user/user_home/domain/entities/services_entity.dart';
 import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_data.dart';
 import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_request_body_model.dart';
 import 'package:shakshak/features/user/user_home/data/models/services_deteles_model.dart';
@@ -20,6 +22,7 @@ import 'package:shakshak/features/user/user_home/domain/usecases/get_active_ride
 import 'package:shakshak/features/user/user_home/domain/usecases/get_captions_usecase.dart';
 import 'package:shakshak/features/user/user_home/domain/usecases/get_in_city_services_usecase.dart';
 import 'package:shakshak/features/user/user_home/domain/usecases/get_out_city_services_usecase.dart';
+import 'package:shakshak/features/user/user_home/domain/usecases/get_shipping_services_usecase.dart';
 import 'package:shakshak/features/user/user_home/domain/usecases/get_price_usecase.dart';
 import 'package:shakshak/features/user/user_home/domain/usecases/get_ride_details_usecase.dart';
 import 'package:shakshak/features/user/user_home/domain/usecases/new_ride_request_usecase.dart';
@@ -29,6 +32,7 @@ class UserHomeCubit extends Cubit<UserHomeState> {
   final GetCaptionsUseCase getCaptionsUseCase;
   final GetInCityServicesUseCase getInCityServicesUseCase;
   final GetOutCityServicesUseCase getOutCityServicesUseCase;
+  final GetShippingServicesUseCase getShippingServicesUseCase;
   final AcceptOfferUseCase acceptOfferUseCase;
   final DenyOfferUseCase denyOfferUseCase;
   final CancelOrderUseCase cancelOrderUseCase;
@@ -41,6 +45,7 @@ class UserHomeCubit extends Cubit<UserHomeState> {
     required this.getCaptionsUseCase,
     required this.getInCityServicesUseCase,
     required this.getOutCityServicesUseCase,
+    required this.getShippingServicesUseCase,
     required this.acceptOfferUseCase,
     required this.denyOfferUseCase,
     required this.cancelOrderUseCase,
@@ -85,7 +90,7 @@ class UserHomeCubit extends Cubit<UserHomeState> {
           TripStorageService.saveActiveTripId(success.id);
           emit(NewRideRequestActiveTripFound(
             activeOrderId: success.id,
-            message: "لديك رحلة جارية بالفعل",
+            message: 'already_has_active_trip',
             activeTrip: success,
           ));
         } else {
@@ -116,40 +121,30 @@ class UserHomeCubit extends Cubit<UserHomeState> {
     );
   }
 
-  Future<void> getServices(bool inCity) async {
-    if (inCity) {
-      emit(ServicesLoading());
-      final result = await getInCityServicesUseCase(NoParameters());
-      result.fold(
-        (error) {
-          debugPrint("error while get services data ${error.message}");
-          return emit(ServicesFailure(errorMessage: error.message));
-        },
-        (success) {
-          servicesDetails = success.data
-                  ?.map((e) => ServicesDetailsModel(service: e))
-                  .toList() ??
-              [];
-          return emit(ServicesSuccess(servicesModel: success));
-        },
-      );
+  Future<void> getServices(String type) async {
+    emit(ServicesLoading());
+    final Either<Failure, ServicesEntity> result;
+    if (type == 'rides') {
+      result = await getInCityServicesUseCase(NoParameters());
+    } else if (type == 'travels') {
+      result = await getOutCityServicesUseCase(NoParameters());
     } else {
-      emit(ServicesLoading());
-      final result = await getOutCityServicesUseCase(NoParameters());
-      result.fold(
-        (error) {
-          debugPrint("error while get services data ${error.message}");
-          return emit(ServicesFailure(errorMessage: error.message));
-        },
-        (success) {
-          servicesDetails = success.data
-                  ?.map((e) => ServicesDetailsModel(service: e))
-                  .toList() ??
-              [];
-          return emit(ServicesSuccess(servicesModel: success));
-        },
-      );
+      result = await getShippingServicesUseCase(NoParameters());
     }
+
+    result.fold(
+      (error) {
+        debugPrint("error while get services data ${error.message}");
+        return emit(ServicesFailure(errorMessage: error.message));
+      },
+      (success) {
+        servicesDetails = success.data
+                ?.map((e) => ServicesDetailsModel(service: e))
+                .toList() ??
+            [];
+        return emit(ServicesSuccess(servicesModel: success));
+      },
+    );
   }
 
   Future<void> acceptOffer({

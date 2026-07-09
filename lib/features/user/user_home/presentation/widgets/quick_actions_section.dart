@@ -10,6 +10,11 @@ import 'package:shakshak/features/user/saved_places/presentation/cubit/saved_pla
 import 'package:shakshak/features/user/saved_places/domain/entities/saved_place_entity.dart';
 import 'package:shakshak/features/user/user_home/presentation/view_models/location/location_cubit.dart';
 
+import 'package:shakshak/core/network/dio_helper/dio_helper.dart';
+import 'package:shakshak/core/network/local/cache_helper.dart';
+import 'package:shakshak/core/constants/app_const.dart';
+import 'package:shakshak/generated/l10n.dart';
+
 class QuickActionsSection extends StatelessWidget {
   const QuickActionsSection({super.key});
 
@@ -17,14 +22,35 @@ class QuickActionsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SavedPlacesCubit, SavedPlacesState>(
       builder: (context, state) {
-        if (state is SavedPlacesSuccess &&
-            (state.places.isNotEmpty || state.suggestedPlaces.isNotEmpty)) {
-          final suggested = state.suggestedPlaces;
-          final places = state.places;
+        final List<SavedPlaceEntity> suggested = (state is SavedPlacesSuccess) ? state.suggestedPlaces : [];
+        final List<SavedPlaceEntity> places = (state is SavedPlacesSuccess) ? state.places : [];
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4.w),
+              child: Text(
+                'خدمات سريعة', // Or some translation, but let's stick to simple layout
+                style: Styles.textStyle16SemiBold(context),
+              ),
+            ),
+            12.ph,
+            // ✨ SHIPMENT STATIC ACTION ✨
+            _ActionCard(
+              place: SavedPlaceEntity(
+                id: '0',
+                name: S.of(context).shipPackage,
+                address: S.of(context).shipmentDetails,
+                lat: 0,
+                lng: 0,
+              ),
+              isSuggested: true,
+              iconData: Icons.local_shipping_rounded,
+              onTap: () => _handleShipmentTap(context),
+            ),
+            if (suggested.isNotEmpty || places.isNotEmpty) ...[
+              12.ph,
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 4.w),
                 child: Text(
@@ -58,11 +84,49 @@ class QuickActionsSection extends StatelessWidget {
                 },
               ),
             ],
-          );
-        }
-        return const SizedBox.shrink();
+          ],
+        );
       },
     );
+  }
+
+  void _handleShipmentTap(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+    
+    bool isVerified = false;
+    try {
+      final token = CacheHelper.getData(key: AppConstant.kToken);
+      final response = await DioHelper.getData(
+        url: 'user/identity-status',
+        token: token,
+      );
+      
+      if (response.statusCode == 200 && response.data != null) {
+         final resData = response.data['data'];
+         if (resData != null && resData['verification_status'] == 'verified') {
+           isVerified = true;
+         }
+      }
+    } catch (e) {
+      // Ignore API error and fallback to not verified
+    }
+    
+    // ignore: use_build_context_synchronously
+    Navigator.pop(context); // hide loading
+    
+    if (isVerified) {
+      // Navigate to Shipment Request Screen
+      // ignore: use_build_context_synchronously
+      navigateTo(context, Routes.shipmentRequestView);
+    } else {
+      // Navigate to Verification View directly
+      // ignore: use_build_context_synchronously
+      navigateTo(context, Routes.userIdentityVerificationView);
+    }
   }
 
   void _handlePlaceTap(BuildContext context, SavedPlaceEntity place) {

@@ -1,44 +1,44 @@
 import 'dart:ui';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shakshak/firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shakshak/core/network/network_info/network_cubit.dart';
 import 'package:shakshak/core/router/app_router.dart';
 import 'package:shakshak/core/services/link_handler_service.dart';
 import 'package:shakshak/core/services/notification_service.dart';
+import 'package:shakshak/core/services/user_storage_service.dart';
+import 'package:shakshak/core/utils/shared_widgets/global_network_banner.dart';
 import 'package:shakshak/core/utils/shared_widgets/map_marker_helper.dart';
+import 'package:shakshak/features/driver/online_registration/presentation/view_models/driver_registration_cubit.dart';
+import 'package:shakshak/features/shared/authentication/presentation/view_models/auth_cubit/auth_cubit.dart';
+import 'package:shakshak/features/shared/authentication/presentation/view_models/country_city_cubit/countries_cities_cubit.dart';
+import 'package:shakshak/features/shared/base_layout/presentation/view_models/drawer_cubit/drawer_cubit.dart';
+import 'package:shakshak/features/shared/loyalty/presentation/view_models/loyalty_cubit.dart';
+import 'package:shakshak/features/shared/notifications/presentation/manager/notification_cubit.dart';
+import 'package:shakshak/features/shared/settings/presentation/view_models/language_cubit/language_cubit.dart';
+import 'package:shakshak/features/shared/settings/presentation/view_models/theme_cubit/theme_cubit.dart';
+import 'package:shakshak/features/user/user_home/presentation/view_models/location/location_cubit.dart';
+import 'package:shakshak/features/user/user_home/presentation/view_models/user_home/user_home_cubit.dart';
+import 'package:shakshak/firebase_options.dart';
 
 import 'core/constants/api_const.dart';
 import 'core/constants/app_const.dart';
 import 'core/network/dio_helper/dio_helper.dart';
 import 'core/network/local/cache_helper.dart';
 import 'core/resources/app_colors.dart';
+import 'core/services/background_location_service.dart';
 import 'core/services/real_time/realtime_manager.dart';
 import 'core/services/service_locator.dart';
-import 'core/services/background_location_service.dart';
 import 'core/utils/bloc_observer.dart';
-import 'package:shakshak/features/shared/base_layout/presentation/view_models/drawer_cubit/drawer_cubit.dart';
-import 'package:shakshak/features/driver/online_registration/presentation/view_models/driver_registration_cubit.dart';
-import 'package:shakshak/features/shared/authentication/presentation/view_models/auth_cubit/auth_cubit.dart';
-import 'package:shakshak/features/shared/settings/presentation/view_models/language_cubit/language_cubit.dart';
-import 'package:shakshak/features/shared/settings/presentation/view_models/theme_cubit/theme_cubit.dart';
-import 'package:shakshak/features/user/user_home/presentation/view_models/location/location_cubit.dart';
-import 'package:shakshak/features/user/user_home/presentation/view_models/user_home/user_home_cubit.dart';
-import 'package:shakshak/features/shared/authentication/presentation/view_models/country_city_cubit/countries_cities_cubit.dart';
-import 'package:shakshak/features/shared/notifications/presentation/manager/notification_cubit.dart';
-import 'package:shakshak/features/shared/loyalty/presentation/view_models/loyalty_cubit.dart';
-import 'package:shakshak/core/services/user_storage_service.dart';
-import 'package:shakshak/features/shared/authentication/data/models/profile_model.dart';
-import 'package:shakshak/core/network/network_info/network_cubit.dart';
-import 'package:shakshak/core/utils/shared_widgets/global_network_banner.dart';
 import 'generated/l10n.dart';
 
 @pragma('vm:entry-point')
@@ -113,6 +113,7 @@ class MyApp extends StatelessWidget {
                 getCaptionsUseCase: sl(),
                 getInCityServicesUseCase: sl(),
                 getOutCityServicesUseCase: sl(),
+                getShippingServicesUseCase: sl(),
                 acceptOfferUseCase: sl(),
                 denyOfferUseCase: sl(),
                 cancelOrderUseCase: sl(),

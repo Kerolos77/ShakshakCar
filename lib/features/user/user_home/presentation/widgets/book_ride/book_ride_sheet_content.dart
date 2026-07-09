@@ -71,7 +71,7 @@ class BookRideSheetContent extends StatefulWidget {
 class _BookRideSheetContentState extends State<BookRideSheetContent> {
   @override
   void initState() {
-    context.read<UserHomeCubit>().getServices(widget.isInCity);
+    context.read<UserHomeCubit>().getServices(widget.isInCity ? 'rides' : 'travels');
     _dateController.text =
         DateFormat('yyyy-MM-dd HH:mm').format(widget.scheduledDate);
     super.initState();
@@ -90,6 +90,9 @@ class _BookRideSheetContentState extends State<BookRideSheetContent> {
     if (oldWidget.scheduledDate != widget.scheduledDate) {
       _dateController.text =
           DateFormat('yyyy-MM-dd HH:mm').format(widget.scheduledDate);
+    }
+    if (oldWidget.isInCity != widget.isInCity) {
+      context.read<UserHomeCubit>().getServices(widget.isInCity ? 'rides' : 'travels');
     }
     super.didUpdateWidget(oldWidget);
   }

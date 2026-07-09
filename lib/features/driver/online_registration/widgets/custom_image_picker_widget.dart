@@ -1,4 +1,4 @@
-﻿import 'dart:io';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -13,12 +13,14 @@ class CustomImagePickerWidget extends StatefulWidget {
   final String title;
   final ValueChanged<XFile?> onImagePicked;
   final XFile? initialImage;
+  final bool cameraOnly;
 
   const CustomImagePickerWidget({
     super.key,
     required this.title,
     required this.onImagePicked,
     this.initialImage,
+    this.cameraOnly = false,
   });
 
   @override
@@ -96,7 +98,12 @@ class _CustomImagePickerWidgetState extends State<CustomImagePickerWidget> {
   Future<void> _pickImage(ImageSource source) async {
     try {
       final picker = ImagePicker();
-      final image = await picker.pickImage(source: source);
+      final image = await picker.pickImage(
+        source: source,
+        imageQuality: 50,
+        maxWidth: 2000,
+        maxHeight: 2000,
+      );
       if (image != null) {
         setState(() => _selectedImage = image);
         widget.onImagePicked(image);
@@ -116,7 +123,9 @@ class _CustomImagePickerWidgetState extends State<CustomImagePickerWidget> {
         Text(widget.title, style: Styles.textStyle16Bold(context)),
         12.ph,
         GestureDetector(
-          onTap: _showImageSourceBottomSheet,
+          onTap: widget.cameraOnly
+              ? () => _pickImage(ImageSource.camera)
+              : _showImageSourceBottomSheet,
           child: _selectedImage == null
               ? DashedBorder(
                   color: Theme.of(context).dividerColor,

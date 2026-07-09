@@ -18,47 +18,47 @@ class CustomAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        !forceDrawer && canPop()
-            ? IconButton(
-                onPressed: () {
-                  navigatePop(context);
-                },
-                icon: Icon(
-                  Icons.chevron_left,
-                  color: Colors.white,
-                  size: 40.r,
-                ))
-            : IconButton(
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-                icon: Icon(
-                  Icons.sort,
-                  color: Colors.white,
-                  size: 40.r,
-                )),
-        Text(
-          title ?? '',
-          style: Styles.textStyle20Bold(context).copyWith(color: Colors.white),
-        ),
-        trailing ??
-            CircleAvatar(
-              backgroundColor: Colors.black,
-              radius: 20.r,
-              child: Icon(
-                Icons.person,
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
+      child: Row(
+        children: [
+          !forceDrawer && canPop()
+              ? IconButton(
+                  onPressed: () {
+                    navigatePop(context);
+                  },
+                  icon: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 24.r,
+                  ),
+                )
+              : IconButton(
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
+                  icon: Icon(
+                    Icons.menu_rounded,
+                    color: Colors.white,
+                    size: 30.r,
+                  ),
+                ),
+          Expanded(
+            child: Text(
+              title ?? '',
+              textAlign: TextAlign.center,
+              style: Styles.textStyle20Bold(context).copyWith(
                 color: Colors.white,
-                size: 32.r,
+                letterSpacing: 0.5,
+                fontSize: 22.sp,
               ),
-            ).paddingSymmetric(
-              horizontal: 12.w,
-            )
-      ],
-    ).paddingSymmetric(
-      horizontal: 4.w,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          trailing ?? SizedBox(width: 48.w),
+        ],
+      ),
     );
   }
 }

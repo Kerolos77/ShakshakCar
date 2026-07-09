@@ -48,8 +48,9 @@ class ApiConstant {
 
   //user home
   static const String getCaptionsUrl = 'captions';
-  static const String getInCityServicesUrl = 'services/incity';
-  static const String getOutCityServicesUrl = 'services/outcity';
+  static const String getInCityServicesUrl = 'services/rides';
+  static const String getOutCityServicesUrl = 'services/travels';
+  static const String getShippingServicesUrl = 'services/shipping';
 
   //driver registration
   static const String driverRegistrationUrl = 'driver/registration';

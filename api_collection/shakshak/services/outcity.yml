@@ -8,7 +8,7 @@ http:
   url: "{{url}}/services/outcity"
   auth:
     type: bearer
-    token: 250|NtI7PvStt8ahJHlS37NAp2kr4owhwChTkrdR7wny229e606c
+    token: "{{tokenDriver}}"
 
 settings:
   encodeUrl: true

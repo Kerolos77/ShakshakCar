@@ -37,11 +37,11 @@ class DriverDrawerListItems extends StatelessWidget {
                   context.read<shakshak_driver_home_cubit.DriverHomeCubit>();
               return SwitchListTile(
                 title: Text(
-                  'Female Only Requests',
+                  S.of(context).femaleOnlyRequests,
                   style: Styles.textStyle14SemiBold(context),
                 ),
                 subtitle: Text(
-                  'Receive trips only from female riders',
+                  S.of(context).femaleOnlyRequestsSub,
                   style: Styles.textStyle12(context)
                       .copyWith(color: Theme.of(context).hintColor),
                 ),
@@ -97,7 +97,7 @@ class DriverDrawerListItems extends StatelessWidget {
           },
         ),
         CustomDrawerItem(
-          title: "متجر الباقات",
+          title: S.of(context).packagesStore,
           icon: Icons.store_mall_directory_rounded,
           isSelected: false,
           onTap: () {

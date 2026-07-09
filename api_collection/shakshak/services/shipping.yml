@@ -1,11 +1,11 @@
 info:
-  name: all
+  name: shipping
   type: http
-  seq: 3
+  seq: 6
 
 http:
   method: GET
-  url: "{{url}}/services/all"
+  url: "{{url}}/services/shipping"
   auth:
     type: bearer
     token: "{{tokenDriver}}"

@@ -45,18 +45,18 @@ class _UserHomeViewState extends State<UserHomeView> {
     context.read<UserHomeCubit>().getCaptions();
     context.read<SavedPlacesCubit>().fetchSavedPlaces();
     context.read<UserHomeCubit>().checkActiveTrip();
-    context.read<UserHomeCubit>().getServices(true); // Fetch ride types
+    context.read<UserHomeCubit>().getServices('rides'); // Fetch ride types
     context.read<AuthCubit>().getProfile(); // Fetch fresh user data
   }
 
-  String _getGreeting() {
+  String _getGreeting(BuildContext context) {
     final hour = DateTime.now().hour;
     if (hour < 12) {
-      return 'صباح الخير';
+      return S.of(context).greetingMorning;
     } else if (hour < 17) {
-      return 'طاب يومك';
+      return S.of(context).greetingAfternoon;
     } else {
-      return 'مساء الخير';
+      return S.of(context).greetingEvening;
     }
   }
 
@@ -132,60 +132,66 @@ class _UserHomeViewState extends State<UserHomeView> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              InkWell(
-                                onTap: () =>
-                                    _scaffoldKey.currentState?.openDrawer(),
-                                borderRadius: BorderRadius.circular(24.r),
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 24.r,
-                                      backgroundColor: Theme.of(context)
-                                          .primaryColor
-                                          .withOpacity(0.1),
-                                      child: Icon(Icons.person,
-                                          color: Theme.of(context).primaryColor,
-                                          size: 28.r),
-                                    ),
-                                    12.pw,
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          '${S.of(context).welcomeBack},',
-                                          style: Styles.textStyle14(context)
-                                              .copyWith(
-                                            color: AppColors.darkGreyColor,
-                                          ),
-                                        ),
-                                        BlocBuilder<AuthCubit, AuthState>(
-                                          builder: (context, authState) {
-                                            final profile = context
-                                                .read<AuthCubit>()
-                                                .profileModel
-                                                ?.data;
-                                            final name = profile?.name ??
-                                                CacheHelper.getData(
-                                                    key: AppConstant
-                                                        .kUserName) ??
-                                                'User';
-                                            return Text(
-                                              name,
-                                              style: Styles.textStyle18Bold(
-                                                      context)
+                              Expanded(
+                                child: InkWell(
+                                  onTap: () =>
+                                      _scaffoldKey.currentState?.openDrawer(),
+                                  borderRadius: BorderRadius.circular(24.r),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 24.r,
+                                        backgroundColor: Theme.of(context)
+                                            .primaryColor
+                                            .withOpacity(0.1),
+                                        child: Icon(Icons.person,
+                                            color: Theme.of(context).primaryColor,
+                                            size: 28.r),
+                                      ),
+                                      12.pw,
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              '${S.of(context).welcomeBack},',
+                                              style: Styles.textStyle14(context)
                                                   .copyWith(
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .onSurface,
+                                                color: AppColors.darkGreyColor,
                                               ),
-                                            );
-                                          },
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            BlocBuilder<AuthCubit, AuthState>(
+                                              builder: (context, authState) {
+                                                final profile = context
+                                                    .read<AuthCubit>()
+                                                    .profileModel
+                                                    ?.data;
+                                                final name = profile?.name ??
+                                                    CacheHelper.getData(
+                                                        key: AppConstant
+                                                            .kUserName) ??
+                                                    'User';
+                                                return Text(
+                                                  name,
+                                                  style: Styles.textStyle18Bold(
+                                                          context)
+                                                      .copyWith(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurface,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                );
+                                              },
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                  ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                               BlocBuilder<NotificationCubit, NotificationState>(
@@ -313,7 +319,7 @@ class _UserHomeViewState extends State<UserHomeView> {
                                         Row(
                                           children: [
                                             Text(
-                                              '${_getGreeting()}، ',
+                                              '${_getGreeting(context)}، ',
                                               style: Styles.textStyle18SemiBold(
                                                       context)
                                                   .copyWith(
@@ -424,8 +430,8 @@ class _UserHomeViewState extends State<UserHomeView> {
                                   state is! UserHomeCaptionLoading) {
                                 ads = [
                                   AdModel(
-                                    title: 'خصم خاص',
-                                    subtitle: 'احصل على خصم 50% لرحلتك الأولى!',
+                                    title: S.of(context).specialDiscount,
+                                    subtitle: S.of(context).specialDiscountSub,
                                     gradientColors: [
                                       AppColors.primaryColor,
                                       AppColors.secondaryColor,

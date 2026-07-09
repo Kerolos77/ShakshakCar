@@ -71,6 +71,22 @@ class UserHomeRepoImp implements UserHomeRepo {
   }
 
   @override
+  Future<Either<Failure, ServicesEntity>> getShippingServices() async {
+    try {
+      var data = await DioHelper.getData(
+        url: ApiConstant.getShippingServicesUrl,
+        token: CacheHelper.getData(key: AppConstant.kToken),
+      );
+      return right(ServicesModel.fromJson(data.data));
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, RideModel>> getRides({required int inCity}) async {
     try {
       var data = await DioHelper.getData(
@@ -177,11 +193,31 @@ class UserHomeRepoImp implements UserHomeRepo {
     required NewRideRequestBodyModel newRideRequestBodyModel,
   }) async {
     try {
-      var response = await DioHelper.postData(
-        url: ApiConstant.orderNewUrl,
-        token: CacheHelper.getData(key: AppConstant.kToken),
-        data: newRideRequestBodyModel.toJson(),
-      );
+      final mapData = await newRideRequestBodyModel.toFormData();
+      Response response;
+
+      if (mapData.containsKey('parcel_image_path') && mapData['parcel_image_path'] != null) {
+        // It's a shipment request with an image
+        final String imagePath = mapData.remove('parcel_image_path');
+        final formData = FormData.fromMap(mapData as Map<String, dynamic>);
+        formData.files.add(MapEntry(
+          'parcel_image',
+          await MultipartFile.fromFile(imagePath),
+        ));
+
+        response = await DioHelper.postFormData(
+          url: ApiConstant.orderNewUrl,
+          token: CacheHelper.getData(key: AppConstant.kToken),
+          data: formData,
+        );
+      } else {
+        // Standard ride request
+        response = await DioHelper.postData(
+          url: ApiConstant.orderNewUrl,
+          token: CacheHelper.getData(key: AppConstant.kToken),
+          data: newRideRequestBodyModel.toJson(),
+        );
+      }
 
       var responseData = response.data;
       if (responseData is String) {

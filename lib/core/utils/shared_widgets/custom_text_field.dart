@@ -30,6 +30,9 @@ class CustomTextField extends StatefulWidget {
     this.fill = true,
     this.autoValidateMode = AutovalidateMode.onUserInteraction,
     this.isReadOnly = false,
+    this.focusNode,
+    this.errorBorderColor,
+    this.errorTextColor,
   });
 
   final String? hint;
@@ -53,6 +56,9 @@ class CustomTextField extends StatefulWidget {
   final double? width;
   final AutovalidateMode? autoValidateMode;
   final bool isReadOnly;
+  final FocusNode? focusNode;
+  final Color? errorBorderColor;
+  final Color? errorTextColor;
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -73,6 +79,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           6.ph,
         ],
         TextFormField(
+          focusNode: widget.focusNode,
           readOnly: widget.isReadOnly,
           autovalidateMode: widget.autoValidateMode,
           obscuringCharacter: "*",
@@ -92,8 +99,17 @@ class _CustomTextFieldState extends State<CustomTextField> {
             enabledBorder: buildOutlineInputBorder(widget.borderColor),
             errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(widget.borderRadius.r),
-                borderSide: const BorderSide(
-                    color: AppColors.redColor, style: BorderStyle.solid)),
+                borderSide: BorderSide(
+                    color: widget.errorBorderColor ?? AppColors.redColor,
+                    width: 1.0,
+                    style: BorderStyle.solid)),
+            focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(widget.borderRadius.r),
+                borderSide: BorderSide(
+                    color: widget.errorBorderColor ?? AppColors.redColor,
+                    width: 1.2,
+                    style: BorderStyle.solid)),
+            errorStyle: const TextStyle(fontSize: 0, height: 0),
             border: buildOutlineInputBorder(widget.borderColor),
             focusedBorder: buildOutlineInputBorder(widget.borderColor),
             contentPadding:

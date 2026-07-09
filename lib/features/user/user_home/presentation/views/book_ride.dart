@@ -20,6 +20,9 @@ import 'package:shakshak/features/shared/payment/presentation/view_models/paymen
 import 'package:shakshak/features/shared/payment/presentation/view_models/payment_states.dart';
 import 'package:shakshak/features/shared/authentication/presentation/view_models/auth_cubit/auth_cubit.dart';
 import 'package:shakshak/core/network/local/cache_helper.dart';
+import 'package:shakshak/core/constants/app_const.dart';
+import 'package:shakshak/core/network/dio_helper/dio_helper.dart';
+import 'package:shakshak/core/resources/app_colors.dart';
 
 import 'package:shakshak/core/utils/google_maps_resolver.dart';
 
@@ -37,10 +40,41 @@ class _BookRideState extends State<BookRide> {
       Completer<GoogleMapController>();
   GoogleMapController? mapController;
   int selectedServiceIndex = -1;
+  bool? _lastIsInCity;
+
+  bool _isVerificationChecked = false;
+  bool _isUserVerified = false;
+
+  Future<void> _checkVerificationStatus() async {
+    try {
+      final token = CacheHelper.getData(key: AppConstant.kToken);
+      final response = await DioHelper.getData(
+        url: 'user/identity-status',
+        token: token,
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        final resData = response.data['data'];
+        if (resData != null) {
+          setState(() {
+            _isUserVerified = resData['verification_status'] == 'verified';
+            _isVerificationChecked = true;
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error checking verification status in BookRide: $e");
+    }
+    setState(() {
+      _isUserVerified = false;
+      _isVerificationChecked = true;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
+    _checkVerificationStatus();
     selectedPaymentMethod = CacheHelper.getData(key: 'default_payment_method') ?? 'cash';
     useWallet = CacheHelper.getData(key: 'use_wallet') ?? false;
     if (selectedPaymentMethod == 'wallet') {
@@ -235,7 +269,10 @@ class _BookRideState extends State<BookRide> {
             navigateAndFinish(context, Routes.offersView,
                 extra: OffersViewArgs(newRideData: state.newRideModel));
           } else if (state is NewRideRequestActiveTripFound) {
-            _showActiveTripDialog(context, state.activeOrderId, state.message);
+            final msg = state.message == 'already_has_active_trip'
+                ? S.of(context).alreadyHasActiveTrip
+                : state.message;
+            _showActiveTripDialog(context, state.activeOrderId, msg);
           } else if (state is CancelOrderLoading) {
             // Optional: show loading overlay
           } else if (state is CancelOrderSuccess) {
@@ -281,6 +318,10 @@ class _BookRideState extends State<BookRide> {
                       );
                     }
                     bool isInCity = distance <= 100;
+                    if (_lastIsInCity != isInCity) {
+                      _lastIsInCity = isInCity;
+                      selectedServiceIndex = -1;
+                    }
                     return BookRideSheetContent(
                       isInCity: isInCity,
                       scrollController: scrollController,
@@ -308,6 +349,20 @@ class _BookRideState extends State<BookRide> {
                       onPassengerCountChanged: _onPassengerCountChanged,
                       onConfirmTap: () {
                         if (state is NewRideRequestLoading) return;
+
+                        if (!_isVerificationChecked) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(S.of(context).checkingAccountStatus),
+                            ),
+                          );
+                          return;
+                        }
+
+                        if (!_isUserVerified) {
+                          _showVerificationRequiredDialog(context);
+                          return;
+                        }
 
                         if (selectedServiceIndex != -1) {
                           if (userHomeCubit.servicesDetails.isNotEmpty) {
@@ -396,7 +451,7 @@ class _BookRideState extends State<BookRide> {
                 Navigator.of(dialogContext).pop();
                 context.read<UserHomeCubit>().getRideDetails(activeOrderId);
               },
-              child: const Text("كمل رحلتك"),
+              child: Text(S.of(context).resumeYourTrip),
             ),
           ],
         ),
@@ -408,22 +463,60 @@ class _BookRideState extends State<BookRide> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text("تأكيد الإلغاء"),
-        content: const Text("هل أنت متأكد أنك تريد إلغاء هذه الرحلة؟"),
+        title: Text(S.of(context).confirmCancellation),
+        content: Text(S.of(context).confirmCancelTripMsg),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text("رجوع"),
+            child: Text(S.of(context).goBack),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(dialogContext); // Close confirmation dialog
-              Navigator.pop(context); // Close the ActiveTripDialog as well
+              Navigator.pop(dialogContext);
+              Navigator.pop(context);
               context.read<UserHomeCubit>().cancelOrder(orderId: orderId);
             },
-            child: const Text(
-              "تأكيد الإلغاء",
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              S.of(context).confirmCancellation,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showVerificationRequiredDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          S.of(context).identityRequiredDialogTitle,
+          textAlign: TextAlign.right,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          S.of(context).identityRequiredDialogMsg,
+          textAlign: TextAlign.right,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+            },
+            child: Text(S.of(context).cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              navigateTo(context, Routes.userIdentityVerificationView).then((_) {
+                _checkVerificationStatus();
+              });
+            },
+            child: Text(
+              S.of(context).verifyNow,
+              style: const TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold),
             ),
           ),
         ],

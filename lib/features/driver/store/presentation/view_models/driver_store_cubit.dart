@@ -40,7 +40,7 @@ class DriverStoreCubit extends Cubit<DriverStoreState> {
         }
       },
       (success) {
-        emit(DriverStoreBuySuccess(message: 'تم شراء الباقة بنجاح'));
+        emit(DriverStoreBuySuccess(message: 'package_purchased_success'));
         fetchPackages(); // refresh to update UI state if needed
       },
     );

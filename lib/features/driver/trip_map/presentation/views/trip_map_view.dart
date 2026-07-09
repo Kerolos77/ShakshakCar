@@ -80,18 +80,17 @@ class _TripMapViewState extends State<TripMapView> {
           final bool isNew = state.newRideIds.contains(updatedRide.id);
 
           // Determine instructions text based on trip status
-          String instructionsHeader = "الذهاب لموقع العميل";
+          String instructionsHeader = S.of(context).headingToCustomer;
           String instructionsBody = updatedRide.sourceAddress;
           IconData navigationIcon = Icons.directions_car_rounded;
 
           if (updatedRide.status == 'arrived') {
-            instructionsHeader = "وصلت للعميل";
-            instructionsBody =
-                "العميل في انتظارك الآن. قم ببدء الرحلة عند ركوبه.";
+            instructionsHeader = S.of(context).arrivedAtCustomer;
+            instructionsBody = S.of(context).arrivedAtCustomerBody;
             navigationIcon = Icons.person_pin_circle_rounded;
           } else if (updatedRide.status == 'started' ||
               updatedRide.status == 'on_trip') {
-            instructionsHeader = "متجه للوجهة";
+            instructionsHeader = S.of(context).headingToDestination;
             instructionsBody = updatedRide.destinationAddress;
             navigationIcon = Icons.navigation_rounded;
           }
@@ -184,7 +183,7 @@ class _TripMapViewState extends State<TripMapView> {
                                   Text(
                                     instructionsBody.isNotEmpty
                                         ? instructionsBody
-                                        : "جاري تحديد المسار...",
+                                        : S.of(context).determiningRoute,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: Styles.textStyle12SemiBold(context),
@@ -230,7 +229,7 @@ class _TripMapViewState extends State<TripMapView> {
                               ),
                             ),
                             Text(
-                              "كم/س",
+                              S.of(context).speedUnit,
                               style: TextStyle(
                                 color: Colors.grey.shade400,
                                 fontSize: 10.sp,
@@ -302,8 +301,8 @@ class _TripMapViewState extends State<TripMapView> {
                               SizedBox(width: 6.w),
                               Text(
                                 state.isSimulationActive
-                                    ? "إيقاف المحاكاة"
-                                    : "محاكاة الحركة",
+                                    ? S.of(context).stopSimulation
+                                    : S.of(context).startSimulation,
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 12.sp,
@@ -376,13 +375,12 @@ class _TripMapViewState extends State<TripMapView> {
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Text(
-                                              updatedRide.user?.name ??
-                                                  "العميل",
+                                              updatedRide.user.name,
                                               style: Styles.textStyle14Bold(
                                                   context),
                                             ),
                                             Text(
-                                              "اضغط لعرض تفاصيل الرحلة كاملة",
+                                              S.of(context).tapToViewTrip,
                                               style: Styles.textStyle10Regular(
                                                       context)
                                                   .copyWith(

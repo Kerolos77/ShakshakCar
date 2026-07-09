@@ -20,9 +20,17 @@ import 'package:shakshak/features/user/user_home/presentation/views/ride_payment
 import 'package:shakshak/features/user/user_home_page/presentation/screen/select_destination_page.dart';
 import 'package:shakshak/features/user/user_home_page/presentation/screen/user_home_page.dart';
 import 'package:shakshak/features/user/store/presentation/views/user_store_view.dart';
+import 'package:shakshak/features/user/presentation/views/user_identity_verification_view.dart';
+import 'package:shakshak/features/user/shipment/presentation/views/shipment_request_view.dart';
+import 'package:shakshak/features/user/shipment/presentation/views/shipment_terms_view.dart';
+import 'package:shakshak/features/user/shipment/presentation/view_models/shipment_cubit.dart';
 
 class UserRoutes {
   static final List<RouteBase> routes = [
+    GoRoute(
+      path: Routes.userIdentityVerificationView,
+      builder: (context, state) => const UserIdentityVerificationView(),
+    ),
     GoRoute(
       path: Routes.userStoreView,
       builder: (context, state) => const UserStoreView(),
@@ -168,6 +176,21 @@ class UserRoutes {
           isAddingCard: args.isAddingCard,
         );
       },
+    ),
+    GoRoute(
+      path: Routes.shipmentRequestView,
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: context.read<UserHomeCubit>()),
+          BlocProvider.value(value: context.read<LocationCubit>()),
+          BlocProvider(create: (context) => ShipmentCubit()),
+        ],
+        child: const ShipmentRequestView(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.shipmentTermsView,
+      builder: (context, state) => const ShipmentTermsView(),
     ),
   ];
 }

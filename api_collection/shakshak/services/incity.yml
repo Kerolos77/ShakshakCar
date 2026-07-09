@@ -8,7 +8,7 @@ http:
   url: "{{url}}/services/incity"
   auth:
     type: bearer
-    token: 188|XExUMewnNcUAjnnPIdw0Tu3pL1wBcPiZzx5H0UUQ5c08b10c
+    token: "{{tokenDriver}}"
 
 settings:
   encodeUrl: true
