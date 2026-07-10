@@ -147,6 +147,9 @@ class _ShipmentRequestViewState extends State<ShipmentRequestView> {
                   content: Text(state.errorMessage),
                   backgroundColor: Colors.red,
                 ));
+                if (state.errorMessage.contains('توثيق') || state.errorMessage.contains('بطاقة') || state.errorMessage.toLowerCase().contains('identity') || state.errorMessage.toLowerCase().contains('verify')) {
+                  navigateTo(context, Routes.userIdentityVerificationView);
+                }
               }
             },
           ),
