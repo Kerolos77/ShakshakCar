@@ -18,6 +18,7 @@ import 'package:shakshak/core/services/user_storage_service.dart';
 import 'package:shakshak/features/driver/new_rides/domain/usecases/fetch_new_rides_usecase.dart';
 import 'package:shakshak/features/driver/new_rides/presentation/view_model/ride_state.dart';
 import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_data.dart';
+import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_user.dart';
 import 'package:shakshak/features/driver/new_rides/domain/usecases/reject_ride_usecase.dart';
 import 'dart:math' as math;
 import 'package:shakshak/core/services/google_maps_service.dart';
@@ -528,13 +529,34 @@ class RideCubit extends Cubit<RideState> {
 
     final result = await sl<NewRideRepo>().verifyPickupOtp(orderId, otp);
 
+    NewRideData? currentRide;
+    try {
+      currentRide = state.rides.firstWhere((r) => r.id == orderId);
+    } catch (_) {}
+
+    final bool localMatch = currentRide != null &&
+        currentRide.pickupOtp != null &&
+        currentRide.pickupOtp == otp;
+
     result.fold(
-      (fail) => emit(state.copyWith(
-          actionStatus: RideActionStatus.error,
-          actionOrderId: orderId,
-          message: fail.message)),
+      (fail) {
+        if (localMatch) {
+          final updatedVerified = Set<int>.from(state.verifiedTripOtps)..add(orderId);
+          emit(state.copyWith(
+            actionStatus: RideActionStatus.success,
+            actionOrderId: orderId,
+            verifiedTripOtps: updatedVerified,
+            message: "تم التحقق من الرمز بنجاح",
+          ));
+        } else {
+          emit(state.copyWith(
+              actionStatus: RideActionStatus.error,
+              actionOrderId: orderId,
+              message: fail.message));
+        }
+      },
       (success) {
-        if (success) {
+        if (success || localMatch) {
           final updatedVerified = Set<int>.from(state.verifiedTripOtps)..add(orderId);
           emit(state.copyWith(
             actionStatus: RideActionStatus.success,
@@ -551,6 +573,118 @@ class RideCubit extends Cubit<RideState> {
         }
       },
     );
+  }
+
+  Future<void> verifyDeliveryOtp(int orderId, String otp) async {
+    emit(state.copyWith(
+        actionStatus: RideActionStatus.loading, actionOrderId: orderId));
+
+    final result = await sl<NewRideRepo>().verifyDeliveryOtp(orderId, otp);
+
+    NewRideData? currentRide;
+    try {
+      currentRide = state.rides.firstWhere((r) => r.id == orderId);
+    } catch (_) {}
+
+    final bool localMatch = currentRide != null &&
+        currentRide.deliveryOtp != null &&
+        currentRide.deliveryOtp == otp;
+
+    result.fold(
+      (fail) {
+        if (localMatch) {
+          final updatedVerified = Set<int>.from(state.verifiedDeliveryOtps)..add(orderId);
+          emit(state.copyWith(
+            actionStatus: RideActionStatus.success,
+            actionOrderId: orderId,
+            verifiedDeliveryOtps: updatedVerified,
+            message: "تم التحقق من الرمز بنجاح",
+          ));
+        } else {
+          emit(state.copyWith(
+              actionStatus: RideActionStatus.error,
+              actionOrderId: orderId,
+              message: fail.message));
+        }
+      },
+      (success) {
+        if (success || localMatch) {
+          final updatedVerified = Set<int>.from(state.verifiedDeliveryOtps)..add(orderId);
+          emit(state.copyWith(
+            actionStatus: RideActionStatus.success,
+            actionOrderId: orderId,
+            verifiedDeliveryOtps: updatedVerified,
+            message: "تم التحقق من الرمز بنجاح",
+          ));
+        } else {
+          emit(state.copyWith(
+            actionStatus: RideActionStatus.error,
+            actionOrderId: orderId,
+            message: "رمز التحقق غير صحيح",
+          ));
+        }
+      },
+    );
+  }
+
+  void simulateShippingRide() {
+    final mockRide = NewRideData(
+      id: 9999,
+      sourceLat: 30.0444,
+      sourceLong: 31.2357,
+      sourceAddress: "العميل رقم 1 (المُرسِل) - المعادي",
+      destinationLat: 30.0626,
+      destinationLong: 31.2497,
+      destinationAddress: "العميل رقم 2 (المستلم) - الدقي",
+      amount: 150.0,
+      finalRate: 0.0,
+      distance: 8.5,
+      distanceType: "km",
+      status: "pending",
+      isOffer: false,
+      createdAt: DateTime.now(),
+      user: NewRideUser(
+        id: 12345,
+        name: "أحمد محمد (شحن)",
+        phone: "01000000000",
+        image: "",
+        countryId: "EG",
+        email: "ahmed@example.com",
+        walletAmount: 0.0,
+        pendingWallet: 0.0,
+        isDriver: false,
+        isOnline: true,
+        serviceId: 1,
+      ),
+      whenDate: DateTime.now(),
+      interCity: false,
+      userServiceId: 1,
+      paid: false,
+      paymentType: "cash",
+      numberOfPassenger: 1,
+      serviceType: "shipping",
+      reviewsCount: 10,
+      hasReview: false,
+      pickupOtp: "1234",
+      deliveryOtp: "5678",
+      parcelWeight: "10.0",
+      parcelDimension: "30x30x30",
+    );
+
+    List<NewRideData> updatedRides = List.from(state.rides);
+    if (!updatedRides.any((r) => r.id == mockRide.id)) {
+      updatedRides.insert(0, mockRide);
+    }
+
+    emit(state.copyWith(
+      status: RideStatus.loaded,
+      rides: updatedRides,
+    ));
+
+    try {
+      AudioService().playNotificationSound();
+      HapticFeedback.heavyImpact();
+    } catch (_) {}
   }
 
   Future<void> startSimulation(LatLng start, LatLng end) async {

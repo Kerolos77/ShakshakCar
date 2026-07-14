@@ -28,6 +28,7 @@ class RideState {
   final double currentSpeed;
   final double currentBearing;
   final Set<int> verifiedTripOtps;
+  final Set<int> verifiedDeliveryOtps;
   final bool isSimulationActive;
 
   RideState({
@@ -46,6 +47,7 @@ class RideState {
     this.currentSpeed = 0.0,
     this.currentBearing = 0.0,
     this.verifiedTripOtps = const {},
+    this.verifiedDeliveryOtps = const {},
     this.isSimulationActive = false,
   });
 
@@ -53,6 +55,7 @@ class RideState {
         status: RideStatus.initial,
         actionStatus: RideActionStatus.initial,
         verifiedTripOtps: const {},
+        verifiedDeliveryOtps: const {},
         isSimulationActive: false,
       );
 
@@ -73,6 +76,7 @@ class RideState {
     double? currentSpeed,
     double? currentBearing,
     Set<int>? verifiedTripOtps,
+    Set<int>? verifiedDeliveryOtps,
     bool? isSimulationActive,
   }) {
     return RideState(
@@ -92,6 +96,7 @@ class RideState {
       currentSpeed: currentSpeed ?? this.currentSpeed,
       currentBearing: currentBearing ?? this.currentBearing,
       verifiedTripOtps: verifiedTripOtps ?? this.verifiedTripOtps,
+      verifiedDeliveryOtps: verifiedDeliveryOtps ?? this.verifiedDeliveryOtps,
       isSimulationActive: isSimulationActive ?? this.isSimulationActive,
     );
   }

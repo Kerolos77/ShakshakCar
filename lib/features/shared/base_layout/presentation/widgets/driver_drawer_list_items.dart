@@ -66,6 +66,16 @@ class DriverDrawerListItems extends StatelessWidget {
           },
         ),
         CustomDrawerItem(
+          title: "طلبات الشحن",
+          icon: Icons.local_shipping_rounded,
+          isSelected: selectedIndex == 9,
+          onTap: () {
+            Scaffold.of(context).closeDrawer();
+            cubit.changeSelectedDrawerItem(9);
+            navigateAndReplacement(context, Routes.driverShippingHomeView);
+          },
+        ),
+        CustomDrawerItem(
           title: S.of(context).rides,
           icon: Icons.history_rounded,
           isSelected: selectedIndex == 2,

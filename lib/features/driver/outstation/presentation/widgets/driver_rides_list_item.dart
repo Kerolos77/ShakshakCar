@@ -137,6 +137,10 @@ class _DriverRidesListItemState extends State<DriverRidesListItem> {
         onVerifyOtp: (otp) {
           rideCubit.verifyPickupOtp(widget.ride.id, otp);
         },
+        isDeliveryOtpVerified: rideState.verifiedDeliveryOtps.contains(widget.ride.id),
+        onVerifyDeliveryOtp: (otp) {
+          rideCubit.verifyDeliveryOtp(widget.ride.id, otp);
+        },
       ),
     );
   }

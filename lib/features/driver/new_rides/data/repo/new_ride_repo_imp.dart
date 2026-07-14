@@ -252,4 +252,27 @@ class NewRideRepoImp implements NewRideRepo {
       return left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, bool>> verifyDeliveryOtp(int orderId, String otp) async {
+    try {
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
+          ApiConstant.testDriverToken;
+
+      var response = await DioHelper.postData(
+        url: 'order/$orderId/verify-delivery-otp',
+        token: token,
+        data: {
+          'delivery_otp': otp,
+        },
+      );
+
+      return right(response.statusCode == 200);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(e.toString()));
+    }
+  }
 }
