@@ -360,7 +360,15 @@ class _BookRideState extends State<BookRide> {
                         }
 
                         if (!_isUserVerified) {
-                          _showVerificationRequiredDialog(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(S.of(context).identityRequiredDialogMsg),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                          navigateTo(context, Routes.userIdentityVerificationView).then((_) {
+                            _checkVerificationStatus();
+                          });
                           return;
                         }
 
