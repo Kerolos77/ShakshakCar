@@ -35,4 +35,7 @@ abstract class NewRideRepo {
 
   /// Verifies the pickup OTP code for starting the trip.
   Future<Either<Failure, bool>> verifyPickupOtp(int orderId, String otp);
+
+  /// Verifies the delivery OTP code for completing the trip.
+  Future<Either<Failure, bool>> verifyDeliveryOtp(int orderId, String otp);
 }

@@ -37,6 +37,7 @@ class Routes {
   // --------------------------------- Driver ---------------------------------
 
   static const String driverHomeView = "/driverHomeView";
+  static const String driverShippingHomeView = "/driverShippingHomeView";
   static const String driverOnlineRegistrationView =
       "/driverOnlineRegistrationView";
 

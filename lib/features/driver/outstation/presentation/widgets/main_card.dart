@@ -32,8 +32,10 @@ class MainCard extends StatelessWidget {
     required this.onDismiss,
     required this.onCancelOffer,
     required this.isOtpVerified,
+    this.isDeliveryOtpVerified = false,
     this.onCancelTrip,
     this.onVerifyOtp,
+    this.onVerifyDeliveryOtp,
     this.negotiationSettings,
     this.showDetailsButton = true,
     this.showDismissButton = true,
@@ -55,7 +57,9 @@ class MainCard extends StatelessWidget {
   final VoidCallback onCancelOffer;
   final VoidCallback? onCancelTrip;
   final bool isOtpVerified;
+  final bool isDeliveryOtpVerified;
   final void Function(String otp)? onVerifyOtp;
+  final void Function(String otp)? onVerifyDeliveryOtp;
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +72,9 @@ class MainCard extends StatelessWidget {
         ride.status == 'arrived' ||
         ride.status == 'started' ||
         ride.status == 'on_trip';
+
+    final bool isDeliveryOtpRequired = (ride.status == 'started' || ride.status == 'on_trip') &&
+        (ride.deliveryOtp != null && ride.deliveryOtp!.isNotEmpty);
 
     // حالة القفل: لو في لودينج أو لو في عرض معلق فعلاً
     final bool isInteractionDisabled = isAnyActionLoading || isOfferPending;
@@ -294,6 +301,81 @@ class MainCard extends StatelessWidget {
                         12.ph,
                       ],
 
+                      // Delivery OTP input field if status is started/on_trip and has deliveryOtp
+                      if (isDeliveryOtpRequired) ...[
+                        10.ph,
+                        if (!isDeliveryOtpVerified) ...[
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              "أدخل رمز التحقق للمستلم (OTP) لإنهاء الرحلة:${ride.deliveryOtp != null && ride.deliveryOtp!.isNotEmpty ? ' (رمز الفحص: ${ride.deliveryOtp})' : ''}",
+                              style: Styles.textStyle14SemiBold(context).copyWith(
+                                color: Styles.getPrimaryColor(context),
+                              ),
+                            ),
+                          ),
+                          10.ph,
+                          Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: Center(
+                              child: Pinput(
+                                length: 4,
+                                autofillHints: const [AutofillHints.oneTimeCode],
+                                defaultPinTheme: PinTheme(
+                                  width: 40.w,
+                                  height: 46.h,
+                                  textStyle: Styles.textStyle18Medium(context).copyWith(
+                                    color: Styles.getPrimaryColor(context),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.3)),
+                                  ),
+                                ),
+                                focusedPinTheme: PinTheme(
+                                  width: 40.w,
+                                  height: 46.h,
+                                  textStyle: Styles.textStyle18Medium(context).copyWith(
+                                    color: Styles.getPrimaryColor(context),
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(10.r),
+                                    border: Border.all(color: Styles.getPrimaryColor(context), width: 1.5),
+                                  ),
+                                ),
+                                onCompleted: (pin) {
+                                  if (onVerifyDeliveryOtp != null) {
+                                    onVerifyDeliveryOtp!(pin);
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12.r),
+                              border: Border.all(color: Colors.green.withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.check_circle, color: Colors.green),
+                                10.pw,
+                                Text(
+                                  "تم التحقق من رمز المستلم بنجاح",
+                                  style: Styles.textStyle14Bold(context).copyWith(color: Colors.green),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        12.ph,
+                      ],
+
                       // Primary button / Active Trip Buttons
                       if (isTripActive)
                         Row(
@@ -312,8 +394,11 @@ class MainCard extends StatelessWidget {
                                     ? null
                                     : (ride.status == 'arrived' && !isOtpVerified
                                         ? null
-                                        : onPrimaryAction),
-                                buttonColor: (ride.status == 'arrived' && !isOtpVerified)
+                                        : (isDeliveryOtpRequired && !isDeliveryOtpVerified
+                                            ? null
+                                            : onPrimaryAction)),
+                                buttonColor: (ride.status == 'arrived' && !isOtpVerified) ||
+                                        (isDeliveryOtpRequired && !isDeliveryOtpVerified)
                                     ? Theme.of(context).disabledColor
                                     : Styles.getPrimaryColor(context),
                                 height: 55.h,

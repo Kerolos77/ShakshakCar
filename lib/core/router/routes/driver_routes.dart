@@ -9,6 +9,7 @@ import 'package:shakshak/features/driver/home/domain/usecases/driver_toggle_onli
 import 'package:shakshak/features/driver/home/domain/usecases/set_driver_destination_usecase.dart';
 import 'package:shakshak/features/driver/home/presentation/view_models/driver_home_cubit.dart';
 import 'package:shakshak/features/driver/home/presentation/views/driver_home_view.dart';
+import 'package:shakshak/features/driver/home/presentation/views/driver_shipping_home_view.dart';
 import 'package:shakshak/features/driver/new_rides/presentation/view_model/ride_cubit.dart';
 import 'package:shakshak/features/driver/store/presentation/views/driver_store_view.dart';
 import 'package:shakshak/features/driver/online_registration/domain/usecases/get_car_brands_usecase.dart';
@@ -44,6 +45,23 @@ class DriverRoutes {
           ),
         ],
         child: const DriverHomeView(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.driverShippingHomeView,
+      builder: (context, state) => MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => DriverHomeCubit(
+              sl<DriverToggleOnlineUseCase>(),
+              sl<SetDriverDestinationUseCase>(),
+            ),
+          ),
+          BlocProvider.value(
+            value: sl<RideCubit>()..connectToWebSocket(),
+          ),
+        ],
+        child: const DriverShippingHomeView(),
       ),
     ),
     GoRoute(
