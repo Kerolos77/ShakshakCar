@@ -6,7 +6,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shakshak/features/shared/base_layout/presentation/views/base_layout_view.dart';
-
+import 'package:shakshak/core/router/router_helper.dart';
+import 'package:shakshak/core/router/routes.dart';
+import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_data.dart';
+import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_user.dart';
 import 'package:shakshak/features/user/user_home/domain/entities/new_ride_data_entity.dart';
 
 import 'package:shakshak/core/utils/shared_widgets/destination_map.dart';
@@ -63,9 +66,59 @@ class _TripMapViewState extends State<TripMapView> {
           final hasRide = state.rides.any((r) => r.id == widget.ride.id);
           if (!hasRide) {
             debugPrint(
-                "TripMapView: Ride ${widget.ride.id} is no longer in active rides (completed or cancelled), popping back to home.");
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
+                "TripMapView: Ride ${widget.ride.id} is no longer in active rides (completed or cancelled), handling routing.");
+            if (state.message == "تم إنهاء الرحلة بنجاح") {
+              final rideData = widget.ride is NewRideData
+                  ? widget.ride as NewRideData
+                  : NewRideData(
+                      id: widget.ride.id,
+                      sourceLat: widget.ride.sourceLat,
+                      sourceLong: widget.ride.sourceLong,
+                      sourceAddress: widget.ride.sourceAddress,
+                      destinationLat: widget.ride.destinationLat,
+                      destinationLong: widget.ride.destinationLong,
+                      destinationAddress: widget.ride.destinationAddress,
+                      amount: widget.ride.amount,
+                      status: 'completed',
+                      createdAt: widget.ride.createdAt,
+                      user: widget.ride.user as NewRideUser,
+                      paid: widget.ride.paid,
+                      paymentType: widget.ride.paymentType,
+                      numberOfPassenger: widget.ride.numberOfPassenger,
+                      serviceType: widget.ride.serviceType,
+                      reviewsCount: widget.ride.reviewsCount,
+                      hasReview: widget.ride.hasReview,
+                      finalRate: widget.ride.finalRate,
+                      distance: widget.ride.distance,
+                      distanceType: widget.ride.distanceType,
+                      isOffer: widget.ride.isOffer,
+                      userServiceId: widget.ride.userServiceId,
+                      interCity: widget.ride.interCity,
+                      whenDate: widget.ride.whenDate,
+                      driver: widget.ride.driver as NewRideUser?,
+                      carBrand: widget.ride.carBrand,
+                      carModel: widget.ride.carModel,
+                      carColor: widget.ride.carColor,
+                      carPlate: widget.ride.carPlate,
+                      parcelDimension: widget.ride.parcelDimension,
+                      parcelImage: widget.ride.parcelImage,
+                      parcelWeight: widget.ride.parcelWeight,
+                      offerdriver: widget.ride.offerdriver,
+                      commission: widget.ride.commission,
+                      paymentDetails: widget.ride.paymentDetails as PaymentDetailsModel?,
+                      offers: widget.ride.offers.cast<OfferModel>(),
+                      pickupOtp: widget.ride.pickupOtp,
+                      deliveryOtp: widget.ride.deliveryOtp,
+                    );
+              navigateAndFinish(
+                context,
+                Routes.tripSummaryView,
+                extra: rideData,
+              );
+            } else {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              }
             }
           }
         }
