@@ -115,6 +115,19 @@ class RideCubit extends Cubit<RideState> {
       // ترتيب بعد الجلب
       final sorted = _sortRides(currentRides, state.pendingOffers);
       emit(state.copyWith(status: RideStatus.loaded, rides: sorted));
+
+      // Auto-subscribe to active/accepted rides channels
+      for (var ride in sorted) {
+        final status = ride.status.toLowerCase();
+        if (status == 'accepted' ||
+            status == 'assigned' ||
+            status == 'driver_on_a_way' ||
+            status == 'arrived' ||
+            status == 'started' ||
+            status == 'on_trip') {
+          subscribeToTripChannel(ride.id);
+        }
+      }
     });
   }
 
@@ -221,12 +234,29 @@ class RideCubit extends Cubit<RideState> {
 
           // تحديث الرحلة في الـ state بنفس الـ id
           final newRide = NewRideData.fromJson(orderJson);
-          final updatedRides = state.rides.map((r) {
-            return r.id == orderId ? r.merge(newRide) : r;
-          }).toList();
+          final status = newRide.status.toLowerCase();
 
-          final sorted = _sortRides(updatedRides, state.pendingOffers);
-          emit(state.copyWith(status: RideStatus.loaded, rides: sorted));
+          if (status == 'completed' || status == 'canceled' || status == 'rejected') {
+            unsubscribeFromTripChannel(orderId);
+
+            final updatedRides = state.rides.where((r) => r.id != orderId).toList();
+            final sorted = _sortRides(updatedRides, state.pendingOffers);
+
+            emit(state.copyWith(
+              status: RideStatus.loaded,
+              rides: sorted,
+              actionStatus: RideActionStatus.success,
+              actionOrderId: orderId,
+              message: status == 'completed' ? "تم إنهاء الرحلة بنجاح" : "تم إلغاء الرحلة",
+            ));
+          } else {
+            final updatedRides = state.rides.map((r) {
+              return r.id == orderId ? r.merge(newRide) : r;
+            }).toList();
+
+            final sorted = _sortRides(updatedRides, state.pendingOffers);
+            emit(state.copyWith(status: RideStatus.loaded, rides: sorted));
+          }
         } catch (e) {
           debugPrint('⚠️ خطأ في معالجة TripStatusUpdated: $e');
         }
