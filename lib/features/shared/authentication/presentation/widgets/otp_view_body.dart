@@ -24,7 +24,19 @@ class OtpViewBody extends StatefulWidget {
 
 class _OtpViewBodyState extends State<OtpViewBody> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  TextEditingController otpController = TextEditingController();
+  late final TextEditingController otpController;
+
+  @override
+  void initState() {
+    super.initState();
+    otpController = TextEditingController(text: '111111');
+  }
+
+  @override
+  void dispose() {
+    otpController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
