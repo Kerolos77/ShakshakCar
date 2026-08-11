@@ -13,12 +13,16 @@ class VerifyPhoneOtpUseCase
   @override
   Future<Either<Failure, ProfileEntity>> call(
       VerifyPhoneOtpParams parameters) async {
-    return await authRepo.verifyPhoneOtp(otp: parameters.otp);
+    return await authRepo.verifyPhoneOtp(
+      otp: parameters.otp,
+      phone: parameters.phone,
+    );
   }
 }
 
 class VerifyPhoneOtpParams {
   final String otp;
+  final String? phone;
 
-  VerifyPhoneOtpParams({required this.otp});
+  VerifyPhoneOtpParams({required this.otp, this.phone});
 }

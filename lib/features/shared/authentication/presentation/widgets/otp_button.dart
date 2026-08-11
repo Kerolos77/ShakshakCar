@@ -1,4 +1,4 @@
-﻿import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -75,6 +75,7 @@ class OtpButton extends StatelessWidget {
               if (formKey.currentState!.validate()) {
                 context.read<AuthCubit>().verifyPhoneOtp(
                       otpCode: int.parse(otpController.text),
+                      phone: phoneNumber,
                     );
               }
             },

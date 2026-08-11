@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
@@ -96,12 +96,18 @@ class AuthRepoImp implements AuthRepo {
   }
 
   @override
-  Future<Either<Failure, ProfileModel>> verifyPhoneOtp(
-      {required String otp}) async {
+  Future<Either<Failure, ProfileModel>> verifyPhoneOtp({
+    required String otp,
+    String? phone,
+  }) async {
     try {
+      final Map<String, dynamic> query = {"code": otp};
+      if (phone != null && phone.isNotEmpty) {
+        query["phone"] = phone;
+      }
       final response = await DioHelper.getDataWithoutToken(
         url: ApiConstant.verifyOTP,
-        query: {"code": otp},
+        query: query,
       );
 
       final jsonData =

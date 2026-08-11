@@ -25,7 +25,10 @@ abstract class AuthRepo {
     required int countryId,
   });
 
-  Future<Either<Failure, ProfileEntity>> verifyPhoneOtp({required String otp});
+  Future<Either<Failure, ProfileEntity>> verifyPhoneOtp({
+    required String otp,
+    String? phone,
+  });
 
   Future<Either<Failure, ProfileEntity>> getProfile();
 

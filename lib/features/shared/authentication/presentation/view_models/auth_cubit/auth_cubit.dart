@@ -96,10 +96,13 @@ class AuthCubit extends Cubit<AuthState> {
 
   void verifyPhoneOtp({
     required int otpCode,
+    String? phone,
   }) async {
     emit(VerifyPhoneOTPLoadingState());
-    var result = await verifyPhoneOtpUseCase
-        .call(VerifyPhoneOtpParams(otp: otpCode.toString()));
+    var result = await verifyPhoneOtpUseCase.call(VerifyPhoneOtpParams(
+      otp: otpCode.toString(),
+      phone: phone,
+    ));
     result.fold((fail) {
       debugPrint("error while verify phone otp ${fail.message}");
       emit(VerifyPhoneOTPErrorState(fail.message));
