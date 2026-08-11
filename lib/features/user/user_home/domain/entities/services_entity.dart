@@ -13,6 +13,7 @@ class ServiceDataEntity {
     this.image,
     this.offerRate,
     this.serviceType,
+    this.vehicleType,
   });
 
   num? id;
@@ -20,4 +21,5 @@ class ServiceDataEntity {
   String? image;
   String? offerRate;
   String? serviceType;
+  String? vehicleType;
 }

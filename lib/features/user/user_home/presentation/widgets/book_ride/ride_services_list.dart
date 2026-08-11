@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shakshak/core/utils/styles.dart';
 import 'package:shakshak/features/user/user_home/data/models/services_deteles_model.dart';
@@ -21,6 +21,7 @@ class RideServicesList extends StatelessWidget {
   final ValueChanged<double> onSliderChanged;
   final Function(String) onResetPrice;
   final bool isInCity;
+  final bool isShipping;
 
   const RideServicesList({
     super.key,
@@ -36,6 +37,7 @@ class RideServicesList extends StatelessWidget {
     required this.onSliderChanged,
     required this.onResetPrice,
     required this.isInCity,
+    this.isShipping = false,
   });
 
   @override
@@ -53,7 +55,9 @@ class RideServicesList extends StatelessWidget {
                     horizontal: 20.w,
                   ),
                   child: Text(
-                    isInCity ? S.of(context).city : S.of(context).outstation,
+                    isShipping
+                        ? S.of(context).shipPackage
+                        : (isInCity ? S.of(context).city : S.of(context).outstation),
                     style: Styles.textStyle12Bold(context)
                         .copyWith(color: AppColors.primaryColor),
                   ),

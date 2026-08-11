@@ -1,0 +1,24 @@
+info:
+  name: add-wallet
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{url}}/admin/users/1/add-wallet"
+  auth:
+    type: bearer
+    token: "{{tokenAdmin}}"
+  body:
+    type: json
+    json: |-
+      {
+        "amount": 50,
+        "notes": "شحن محفظة يدوي للعميل"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

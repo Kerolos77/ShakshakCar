@@ -8,22 +8,48 @@ class NotificationModel extends NotificationEntity {
     required super.date,
     super.isRead = false,
     super.type,
+    super.imageUrl,
     super.payload,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
-    var dataObj = json['data'] is Map<String, dynamic> ? json['data'] : {};
+    var dataObj = json['data'] is Map<String, dynamic>
+        ? json['data'] as Map<String, dynamic>
+        : <String, dynamic>{};
+
+    String? img = dataObj['image'] ??
+        dataObj['image_url'] ??
+        dataObj['imageUrl'] ??
+        dataObj['picture'] ??
+        dataObj['photo'] ??
+        json['image'] ??
+        json['image_url'] ??
+        json['imageUrl'] ??
+        json['picture'] ??
+        json['photo'];
+
+    String? parsedType = dataObj['type'] ?? json['type'] ?? json['notification_type'];
+
+    Map<String, dynamic>? parsedPayload = (dataObj['payload'] is Map<String, dynamic>)
+        ? dataObj['payload']
+        : ((json['payload'] is Map<String, dynamic>)
+            ? json['payload']
+            : (dataObj.isNotEmpty ? dataObj : null));
+
     return NotificationModel(
       id: json['id']?.toString() ??
           DateTime.now().millisecondsSinceEpoch.toString(),
       title: dataObj['title'] ?? json['title'] ?? '',
       body: dataObj['body'] ?? json['body'] ?? '',
-      date: json['created_at'] != null 
+      date: json['created_at'] != null
           ? DateTime.tryParse(json['created_at']) ?? DateTime.now()
-          : (json['date'] != null ? DateTime.tryParse(json['date']) ?? DateTime.now() : DateTime.now()),
+          : (json['date'] != null
+              ? DateTime.tryParse(json['date']) ?? DateTime.now()
+              : DateTime.now()),
       isRead: json['read_at'] != null || (json['is_read'] == true),
-      type: json['type'],
-      payload: dataObj['payload'] ?? json['payload'],
+      type: parsedType,
+      imageUrl: (img != null && img.isNotEmpty) ? img : null,
+      payload: parsedPayload,
     );
   }
 
@@ -35,6 +61,7 @@ class NotificationModel extends NotificationEntity {
       'date': date.toIso8601String(),
       'is_read': isRead,
       'type': type,
+      'image_url': imageUrl,
       'payload': payload,
     };
   }

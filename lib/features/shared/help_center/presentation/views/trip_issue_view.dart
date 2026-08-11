@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shakshak/core/extentions/glopal_extentions.dart';
 import 'package:shakshak/core/resources/app_colors.dart';
+import 'package:shakshak/core/services/service_locator.dart';
+import 'package:shakshak/core/services/user_storage_service.dart';
 import 'package:shakshak/core/utils/shared_widgets/custom_button.dart';
 import 'package:shakshak/core/utils/shared_widgets/custom_loading_button.dart';
 import 'package:shakshak/core/utils/shared_widgets/custom_text_field.dart';
@@ -11,14 +13,12 @@ import 'package:shakshak/core/utils/shared_widgets/ride_destination_widget.dart'
 import 'package:shakshak/core/utils/shared_widgets/show_snack_bar.dart';
 import 'package:shakshak/core/utils/styles.dart';
 import 'package:shakshak/core/utils/validations.dart';
+import 'package:shakshak/features/shared/base_layout/presentation/views/base_layout_view.dart';
 import 'package:shakshak/features/shared/contact_us/domain/usecases/get_contact_us_usecase.dart';
 import 'package:shakshak/features/shared/contact_us/domain/usecases/write_us_usecase.dart';
-import 'package:shakshak/features/shared/base_layout/presentation/views/base_layout_view.dart';
 import 'package:shakshak/features/shared/contact_us/presentation/view_models/contact_us_cubit.dart';
 import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_data.dart';
 import 'package:shakshak/generated/l10n.dart';
-import 'package:shakshak/core/services/service_locator.dart';
-import 'package:shakshak/core/services/user_storage_service.dart';
 
 class TripIssueView extends StatefulWidget {
   final NewRideData ride;
@@ -70,6 +70,7 @@ class _TripIssueViewState extends State<TripIssueView> {
                 24.ph,
                 BlocConsumer<ContactUsCubit, ContactUsState>(
                   listener: (context, state) {
+                    if (!context.mounted) return;
                     if (state is WriteUsSuccess) {
                       showSnackBar(
                         context,
@@ -78,7 +79,9 @@ class _TripIssueViewState extends State<TripIssueView> {
                         AppColors.primaryColor,
                         ContentType.success,
                       );
-                      Navigator.pop(context);
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
                     }
                     if (state is WriteUsFailure) {
                       showSnackBar(

@@ -18,6 +18,32 @@ http:
         value: "111111"
         disabled: true
   auth: inherit
+  
+script:
+  post-response: |
+    try {
+      if (res.status === 200) {
+        const resData = res.body?.data || res.body;
+        const token = resData?.token || resData?.access_token || res.body?.token;
+        const isDriver = resData && (resData.is_driver == 1 || resData.is_driver === true);
+
+        if (token) {
+          if (isDriver) {
+            bru.setVar("tokenDriver", token);
+            try { bru.setEnvVar("tokenDriver", token); } catch (e) {}
+            console.log("✅ Driver Token saved successfully:", token);
+          } else {
+            bru.setVar("tokenUser", token);
+            try { bru.setEnvVar("tokenUser", token); } catch (e) {}
+            console.log("✅ User Token saved successfully:", token);
+          }
+        } else {
+          console.log("⚠️ Token not found in response:", res.body);
+        }
+      }
+    } catch (err) {
+      console.log("❌ Script execution error:", err);
+    }
 
 settings:
   encodeUrl: true

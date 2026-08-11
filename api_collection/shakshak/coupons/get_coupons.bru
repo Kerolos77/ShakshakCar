@@ -1,0 +1,15 @@
+meta {
+  name: 1. Get Available Coupons
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{url}}/coupons
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{tokenUser}}
+}

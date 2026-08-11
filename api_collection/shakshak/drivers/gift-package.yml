@@ -1,0 +1,23 @@
+info:
+  name: gift-package
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{url}}/admin/drivers/1/gift-package"
+  auth:
+    type: bearer
+    token: "{{tokenAdmin}}"
+  body:
+    type: json
+    json: |-
+      {
+        "package_id": 1
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

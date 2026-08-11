@@ -1,4 +1,4 @@
-﻿import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shakshak/core/extentions/glopal_extentions.dart';
@@ -149,6 +149,104 @@ class DriveDetailsCard extends StatelessWidget {
               ],
             ),
             16.ph,
+            if (ride.displayOtp != null && ride.displayOtp!.isNotEmpty) ...[
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryColor.withOpacity(0.12),
+                      AppColors.primaryColor.withOpacity(0.04),
+                    ],
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                  ),
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: AppColors.primaryColor.withOpacity(0.4),
+                    width: 1.5,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(8.r),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryColor.withOpacity(0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.pin_outlined,
+                        color: Colors.white,
+                        size: 20.r,
+                      ),
+                    ),
+                    12.pw,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "رمز التحقق (OTP)",
+                            style: Styles.textStyle14Bold(context).copyWith(
+                              color: AppColors.primaryColor,
+                            ),
+                          ),
+                          2.ph,
+                          Text(
+                            "أعطِ هذا الرمز للسائق لبدء الرحلة",
+                            style: Styles.textStyle10Regular(context).copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    8.pw,
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 14.w, vertical: 6.h),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: AppColors.primaryColor,
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.06),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        ride.displayOtp!,
+                        style: TextStyle(
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 4.w,
+                          color: AppColors.primaryColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              14.ph,
+            ],
             const Divider(),
             8.ph,
             Row(

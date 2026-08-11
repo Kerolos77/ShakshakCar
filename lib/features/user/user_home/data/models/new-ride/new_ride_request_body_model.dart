@@ -15,6 +15,10 @@ class NewRideRequestBodyModel {
   final bool? femaleOnly;
   final int? savedCardId;
   
+  // Coupon fields
+  final String? couponCode;
+  final String? couponId;
+  
   // Shipment fields
   final String? receiverName;
   final String? receiverPhone;
@@ -38,6 +42,8 @@ class NewRideRequestBodyModel {
     required this.numberOfPassenger,
     this.femaleOnly,
     this.savedCardId,
+    this.couponCode,
+    this.couponId,
     this.receiverName,
     this.receiverPhone,
     this.parcelWeight,
@@ -63,6 +69,8 @@ class NewRideRequestBodyModel {
       numberOfPassenger: int.parse(json['number_of_passenger'].toString()),
       femaleOnly: json['is_female_only']?.toString() == '1',
       savedCardId: json['saved_card_id'] != null ? int.tryParse(json['saved_card_id'].toString()) : null,
+      couponCode: json['coupon_code'] ?? json['promo_code'],
+      couponId: json['coupon_id']?.toString(),
       receiverName: json['receiver_name'],
       receiverPhone: json['receiver_phone'],
       parcelWeight: json['parcel_weight'],
@@ -89,6 +97,8 @@ class NewRideRequestBodyModel {
       'number_of_passenger': numberOfPassenger,
       'is_female_only': femaleOnly == true ? 1 : 0,
       if (savedCardId != null) 'saved_card_id': savedCardId,
+      if (couponCode != null && couponCode!.isNotEmpty) 'coupon_code': couponCode,
+      if (couponId != null && couponId!.isNotEmpty) 'coupon_id': couponId,
       if (receiverName != null) 'receiver_name': receiverName,
       if (receiverPhone != null) 'receiver_phone': receiverPhone,
       if (parcelWeight != null) 'parcel_weight': parcelWeight,

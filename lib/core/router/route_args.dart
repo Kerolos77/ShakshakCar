@@ -59,7 +59,25 @@ class BookRideArgs {
   final String? lngParam;
   final String? googleMapsUrl;
 
-  BookRideArgs({this.latParam, this.lngParam, this.googleMapsUrl});
+  // Shipment fields
+  final bool isShipping;
+  final String? receiverName;
+  final String? receiverPhone;
+  final String? parcelWeight;
+  final String? parcelDimension;
+  final String? parcelImagePath;
+
+  BookRideArgs({
+    this.latParam,
+    this.lngParam,
+    this.googleMapsUrl,
+    this.isShipping = false,
+    this.receiverName,
+    this.receiverPhone,
+    this.parcelWeight,
+    this.parcelDimension,
+    this.parcelImagePath,
+  });
 }
 
 class RidesViewArgs {

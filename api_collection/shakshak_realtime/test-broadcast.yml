@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: https://shakshak.net/api/test-broadcast/69/970
+  url: https://shakshak.net/api/test-broadcast/69/1007
   auth: inherit
 
 settings:

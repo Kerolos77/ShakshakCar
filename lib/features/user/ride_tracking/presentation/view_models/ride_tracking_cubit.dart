@@ -206,6 +206,9 @@ class RideTrackingCubit extends Cubit<RideTrackingState> {
               carColor: parsed.carColor ?? currentRide.carColor,
               paymentDetails: (parsed.paymentDetails ?? currentRide.paymentDetails) as PaymentDetailsModel?,
               offers: (parsed.offers.isNotEmpty ? parsed.offers : currentRide.offers).cast<OfferModel>(),
+              pickupOtp: parsed.pickupOtp ?? currentRide.pickupOtp,
+              deliveryOtp: parsed.deliveryOtp ?? currentRide.deliveryOtp,
+              receiverVerificationOtp: parsed.receiverVerificationOtp ?? currentRide.receiverVerificationOtp,
             );
             debugPrint("✅ Ride data updated for trip: ${updatedRide.id} with status: $status");
           } catch (e) {

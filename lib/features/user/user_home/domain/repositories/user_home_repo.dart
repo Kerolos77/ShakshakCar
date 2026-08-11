@@ -52,4 +52,9 @@ abstract class UserHomeRepo {
   });
 
   Future<Either<Failure, NewRideDataEntity>> getActiveRide();
+
+  Future<Either<Failure, bool>> verifyReceiverOtp({
+    required int orderId,
+    required String otp,
+  });
 }

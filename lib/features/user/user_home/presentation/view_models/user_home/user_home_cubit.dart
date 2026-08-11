@@ -27,6 +27,7 @@ import 'package:shakshak/features/user/user_home/domain/usecases/get_price_useca
 import 'package:shakshak/features/user/user_home/domain/usecases/get_ride_details_usecase.dart';
 import 'package:shakshak/features/user/user_home/domain/usecases/new_ride_request_usecase.dart';
 import 'package:shakshak/features/user/user_home/presentation/view_models/user_home/user_home_state.dart';
+import 'package:shakshak/features/user/user_home/domain/repositories/user_home_repo.dart';
 
 class UserHomeCubit extends Cubit<UserHomeState> {
   final GetCaptionsUseCase getCaptionsUseCase;
@@ -486,6 +487,21 @@ class UserHomeCubit extends Cubit<UserHomeState> {
     isFemaleOnly = value;
     emit(OffersUpdated(List<TripOfferModel>.from(
         offers))); // using an existing simple state update
+  }
+
+  Future<void> verifyReceiverOtp(
+      {required int orderId, required String otp}) async {
+    emit(VerifyReceiverOtpLoading());
+    final repo = sl<UserHomeRepo>();
+    final result = await repo.verifyReceiverOtp(orderId: orderId, otp: otp);
+    result.fold(
+      (failure) =>
+          emit(VerifyReceiverOtpFailure(errorMessage: failure.message)),
+      (success) {
+        emit(VerifyReceiverOtpSuccess(
+            orderId: orderId, message: 'تم تأكيد رقم المستلم بنجاح'));
+      },
+    );
   }
 
   @override

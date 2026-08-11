@@ -33,6 +33,7 @@ class ServiceData implements ServiceDataEntity {
     this.image,
     this.offerRate,
     this.serviceType,
+    this.vehicleType,
   });
 
   ServiceData.fromJson(dynamic json) {
@@ -41,13 +42,21 @@ class ServiceData implements ServiceDataEntity {
     image = json['image'];
     offerRate = json['offer_rate'];
     serviceType = json['service_type'];
+    vehicleType = json['vehicle_type'] ?? json['vehicleType'];
   }
 
+  @override
   num? id;
+  @override
   String? name;
+  @override
   String? image;
+  @override
   String? offerRate;
+  @override
   String? serviceType;
+  @override
+  String? vehicleType;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -56,6 +65,7 @@ class ServiceData implements ServiceDataEntity {
     map['image'] = image;
     map['offer_rate'] = offerRate;
     map['service_type'] = serviceType;
+    map['vehicle_type'] = vehicleType;
     return map;
   }
 }

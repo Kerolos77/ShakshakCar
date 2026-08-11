@@ -1,0 +1,23 @@
+info:
+  name: verify-receiver-otp
+  type: http
+  seq: 28
+
+http:
+  method: POST
+  url: "{{url}}/orders/1/verify-receiver-otp"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Authorization
+      value: "Bearer {{tokenUser}}"
+  body:
+    type: json
+    data: "{\n  \"otp\": \"1111\"\n}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

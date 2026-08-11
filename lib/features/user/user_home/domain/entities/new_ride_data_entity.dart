@@ -73,6 +73,7 @@ class NewRideDataEntity {
   final String paymentType;
   final int numberOfPassenger;
   final String serviceType;
+  final String? vehicleType;
   final int reviewsCount;
   final bool hasReview;
   final NewRideUserEntity? driver;
@@ -89,6 +90,11 @@ class NewRideDataEntity {
   final List<OfferEntity> offers;
   final String? pickupOtp;
   final String? deliveryOtp;
+  final String? receiverVerificationOtp;
+  final bool isReceiverVerified;
+  final String? receiverPhone;
+  final String? receiverName;
+  final bool isShippingOrder;
 
   NewRideDataEntity({
     required this.id,
@@ -113,6 +119,7 @@ class NewRideDataEntity {
     required this.paymentType,
     required this.numberOfPassenger,
     required this.serviceType,
+    this.vehicleType,
     required this.reviewsCount,
     required this.hasReview,
     this.driver,
@@ -129,5 +136,18 @@ class NewRideDataEntity {
     this.offers = const [],
     this.pickupOtp,
     this.deliveryOtp,
+    this.receiverVerificationOtp,
+    this.isReceiverVerified = false,
+    this.receiverPhone,
+    this.receiverName,
+    this.isShippingOrder = false,
   });
+
+  String? get displayOtp {
+    if (pickupOtp != null && pickupOtp!.trim().isNotEmpty) return pickupOtp;
+    if (deliveryOtp != null && deliveryOtp!.trim().isNotEmpty) return deliveryOtp;
+    if (receiverVerificationOtp != null && receiverVerificationOtp!.trim().isNotEmpty) return receiverVerificationOtp;
+    return null;
+  }
 }
+

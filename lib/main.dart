@@ -198,29 +198,39 @@ Future<void> initialization() async {
   await LinkHandlerService().init();
   await sl<CountriesCitiesCubit>().getCountries();
 
-  // Initialize the headless background service
-  await BackgroundLocationService().initializeService();
+  // Initialize the headless background service safely
+  try {
+    await BackgroundLocationService().initializeService();
+  } catch (e) {
+    debugPrint("⚠️ BackgroundLocationService init error: $e");
+  }
 
   AppConstant.currentLanguage =
       CacheHelper.getData(key: AppConstant.kCurrentLanguage) ?? 'en';
 
-  // Set test token for Driver location updates
-  // sl<LocationService>()
-  //     .setTestToken("258|cP17juzglDsOTmr2WzD2lGomHx4pCGbRlr6ATdvW3a4eb6da");
-  // Start background location tracking (Moved to Driver Online toggle as per new architecture)
-  // sl<LocationService>().startTracking();
-
   if (CacheHelper.getData(key: AppConstant.kToken) != null) {
     debugPrint("🚀 User logged in, connecting to WebSocket...");
-    sl<RealtimeManager>().connect(url: ApiConstant.realTimeBaseUrl);
+    try {
+      sl<RealtimeManager>().connect(url: ApiConstant.realTimeBaseUrl);
+    } catch (e) {
+      debugPrint("⚠️ RealtimeManager connect error: $e");
+    }
 
     // Initialize NotificationCubit if user data exists
-    final user = UserStorageService.getUser();
-    if (user != null) {
-      sl<NotificationCubit>().init(user);
+    try {
+      final user = UserStorageService.getUser();
+      if (user != null) {
+        sl<NotificationCubit>().init(user);
+      }
+    } catch (e) {
+      debugPrint("⚠️ NotificationCubit init error: $e");
     }
   }
 
   // ✅ تحميل مسبق للأيقونات عشان الخرائط تبقى سريعة جداً
-  await MapMarkerHelper.preloadCommonMarkers();
+  try {
+    await MapMarkerHelper.preloadCommonMarkers();
+  } catch (e) {
+    debugPrint("⚠️ MapMarkerHelper preload error: $e");
+  }
 }

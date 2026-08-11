@@ -14,8 +14,7 @@ class NewRideRepoImp implements NewRideRepo {
   @override
   Future<Either<Failure, List<NewRideData>>> fetchNewRides() async {
     try {
-      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
-          ApiConstant.testDriverToken;
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ?? '';
 
       var response = await DioHelper.getData(
         url: ApiConstant.orderOldForDriver,
@@ -58,8 +57,7 @@ class NewRideRepoImp implements NewRideRepo {
   @override
   Future<Either<Failure, bool>> acceptRide(int orderId) async {
     try {
-      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
-          ApiConstant.testDriverToken;
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ?? '';
 
       var response = await DioHelper.postData(
         url: ApiConstant.driverAcceptUserPriceUrl,
@@ -82,8 +80,7 @@ class NewRideRepoImp implements NewRideRepo {
   Future<Either<Failure, bool>> counterOffer(
       int orderId, double offerRate) async {
     try {
-      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
-          ApiConstant.testDriverToken;
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ?? '';
 
       var response = await DioHelper.postData(
         url: ApiConstant.driverCounterOfferUrl,
@@ -107,8 +104,7 @@ class NewRideRepoImp implements NewRideRepo {
   Future<Either<Failure, NegotiationSettingsEntity>>
       fetchNegotiationSettings() async {
     try {
-      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
-          ApiConstant.testDriverToken;
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ?? '';
 
       var response = await DioHelper.getData(
         url: ApiConstant.percentageIncreaseUrl,
@@ -130,8 +126,7 @@ class NewRideRepoImp implements NewRideRepo {
   @override
   Future<Either<Failure, bool>> rejectRide(int orderId) async {
     try {
-      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
-          ApiConstant.testDriverToken;
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ?? '';
 
       var response = await DioHelper.postData(
         url: ApiConstant.rejectOrderUrl,
@@ -153,8 +148,7 @@ class NewRideRepoImp implements NewRideRepo {
   @override
   Future<Either<Failure, bool>> arriveRide(int orderId) async {
     try {
-      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
-          ApiConstant.testDriverToken;
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ?? '';
 
       var response = await DioHelper.getData(
         url: 'order/arrived/$orderId',
@@ -173,8 +167,7 @@ class NewRideRepoImp implements NewRideRepo {
   @override
   Future<Either<Failure, bool>> startRide(int orderId) async {
     try {
-      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
-          ApiConstant.testDriverToken;
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ?? '';
 
       var response = await DioHelper.getData(
         url: 'order/start/$orderId',
@@ -193,8 +186,7 @@ class NewRideRepoImp implements NewRideRepo {
   @override
   Future<Either<Failure, bool>> completeRide(int orderId) async {
     try {
-      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
-          ApiConstant.testDriverToken;
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ?? '';
 
       var response = await DioHelper.getData(
         url: 'order/end/$orderId',
@@ -213,8 +205,7 @@ class NewRideRepoImp implements NewRideRepo {
   @override
   Future<Either<Failure, bool>> cancelRide(int orderId) async {
     try {
-      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
-          ApiConstant.testDriverToken;
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ?? '';
 
       var response = await DioHelper.getData(
         url: 'order/cancel/$orderId',
@@ -233,8 +224,7 @@ class NewRideRepoImp implements NewRideRepo {
   @override
   Future<Either<Failure, bool>> verifyPickupOtp(int orderId, String otp) async {
     try {
-      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
-          ApiConstant.testDriverToken;
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ?? '';
 
       var response = await DioHelper.postData(
         url: 'order/$orderId/verify-pickup-otp',
@@ -256,8 +246,7 @@ class NewRideRepoImp implements NewRideRepo {
   @override
   Future<Either<Failure, bool>> verifyDeliveryOtp(int orderId, String otp) async {
     try {
-      final String token = CacheHelper.getData(key: AppConstant.kToken) ??
-          ApiConstant.testDriverToken;
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ?? '';
 
       var response = await DioHelper.postData(
         url: 'order/$orderId/verify-delivery-otp',

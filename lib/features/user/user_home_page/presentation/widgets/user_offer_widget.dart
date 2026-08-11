@@ -2,22 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shakshak/core/resources/app_colors.dart';
 import 'package:shakshak/core/utils/styles.dart';
+import 'package:shakshak/features/shared/coupons/presentation/widgets/coupon_input_widget.dart';
 import 'package:shakshak/generated/l10n.dart';
 
 import 'find_driver_button.dart';
 import 'title_with_close_button.dart';
 
-class UserOfferWidget extends StatelessWidget {
-  const UserOfferWidget({super.key, required this.controller});
+class UserOfferWidget extends StatefulWidget {
+  const UserOfferWidget({
+    super.key,
+    required this.controller,
+    this.prefilledCouponCode,
+    this.onCouponApplied,
+    this.onCouponRemoved,
+  });
 
   final TextEditingController controller;
+  final String? prefilledCouponCode;
+  final void Function(String code, String? couponId, double discount, double finalAmount)? onCouponApplied;
+  final void Function()? onCouponRemoved;
+
+  @override
+  State<UserOfferWidget> createState() => _UserOfferWidgetState();
+}
+
+class _UserOfferWidgetState extends State<UserOfferWidget> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 45.h,
       child: TextFormField(
-        controller: controller,
+        controller: widget.controller,
         readOnly: true,
         style: Styles.textStyle18SemiBold(context),
         keyboardType: TextInputType.number,
@@ -84,7 +104,7 @@ class UserOfferWidget extends StatelessWidget {
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 40.w),
                             child: TextFormField(
-                              controller: controller,
+                              controller: widget.controller,
                               style: Styles.textStyle28Bold(context).copyWith(
                                 fontSize: 40.sp,
                                 color: Theme.of(context)
@@ -105,35 +125,16 @@ class UserOfferWidget extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: 20.h),
-                          InkWell(
-                            onTap: () {},
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.account_balance_wallet_rounded,
-                                  color: Theme.of(context).hintColor,
-                                  size: 30.sp,
-                                ),
-                                SizedBox(width: 20.w),
-                                Expanded(
-                                  child: Text(
-                                    S.of(context).promoCode,
-                                    style: Styles.textStyle18SemiBold(context)
-                                        .copyWith(
-                                      fontWeight: FontWeight.w500,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface,
-                                    ),
-                                  ),
-                                ),
-                                Spacer(),
-                                Icon(
-                                  Icons.arrow_forward_ios_outlined,
-                                ),
-                              ],
-                            ),
+                          SizedBox(height: 8.h),
+                          CouponInputWidget(
+                            orderAmount: double.tryParse(widget.controller.text) ?? 0.0,
+                            prefilledCode: widget.prefilledCouponCode,
+                            onCouponApplied: (code, couponId, discount, finalAmount) {
+                              widget.onCouponApplied?.call(code, couponId, discount, finalAmount);
+                            },
+                            onCouponRemoved: () {
+                              widget.onCouponRemoved?.call();
+                            },
                           ),
                           SizedBox(height: 20.h),
                           Row(

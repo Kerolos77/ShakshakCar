@@ -1,0 +1,22 @@
+meta {
+  name: verify-receiver-otp
+  type: http
+  seq: 28
+}
+
+post {
+  url: {{url}}/orders/1/verify-receiver-otp
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{tokenUser}}
+}
+
+body:json {
+  {
+    "otp": "1111"
+  }
+}

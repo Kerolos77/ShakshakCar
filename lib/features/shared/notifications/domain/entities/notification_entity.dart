@@ -5,6 +5,7 @@ class NotificationEntity {
   final DateTime date;
   bool isRead;
   final String? type;
+  final String? imageUrl;
   final Map<String, dynamic>? payload;
 
   NotificationEntity({
@@ -14,6 +15,7 @@ class NotificationEntity {
     required this.date,
     this.isRead = false,
     this.type,
+    this.imageUrl,
     this.payload,
   });
 }

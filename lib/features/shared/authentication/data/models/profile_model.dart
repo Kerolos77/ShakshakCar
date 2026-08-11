@@ -93,6 +93,8 @@ class UserData implements UserDataEntity {
     gender = userJson['gender'];
     rewardPoints = userJson['reward_points'];
     cashRestrictionSecondsRemaining = userJson['cash_restriction_seconds_remaining'];
+    isVip = userJson['is_vip'] == true || userJson['is_vip'] == 1;
+    vipTheme = userJson['vip_theme'] != null ? VipThemeModel.fromJson(userJson['vip_theme']) : null;
     activePackage = userJson['active_package'] != null ? ActivePackageModel.fromJson(userJson['active_package']) : null;
   }
 
@@ -113,6 +115,8 @@ class UserData implements UserDataEntity {
   String? gender;
   int? rewardPoints;
   int? cashRestrictionSecondsRemaining;
+  bool? isVip;
+  VipThemeModel? vipTheme;
   ActivePackage? activePackage;
 
   Map<String, dynamic> toJson() {
@@ -134,10 +138,41 @@ class UserData implements UserDataEntity {
     map['gender'] = gender;
     map['reward_points'] = rewardPoints;
     map['cash_restriction_seconds_remaining'] = cashRestrictionSecondsRemaining;
+    map['is_vip'] = isVip;
+    if (vipTheme != null) {
+      map['vip_theme'] = vipTheme!.toJson();
+    }
     if (activePackage != null) {
       map['active_package'] = activePackage!.toJson();
     }
     return map;
+  }
+}
+
+class VipThemeModel extends VipThemeEntity {
+  VipThemeModel({
+    required super.isVip,
+    super.badgeTitle,
+    super.primaryColor,
+    super.showGoldFrame,
+  });
+
+  factory VipThemeModel.fromJson(Map<String, dynamic> json) {
+    return VipThemeModel(
+      isVip: json['is_vip'] == true || json['is_vip'] == 1,
+      badgeTitle: json['badge_title']?.toString(),
+      primaryColor: json['primary_color']?.toString(),
+      showGoldFrame: json['show_gold_frame'] == true || json['show_gold_frame'] == 1,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'is_vip': isVip,
+      'badge_title': badgeTitle,
+      'primary_color': primaryColor,
+      'show_gold_frame': showGoldFrame,
+    };
   }
 }
 

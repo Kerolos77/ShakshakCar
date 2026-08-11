@@ -43,20 +43,26 @@ class _RidePaymentWebViewScreenState extends State<RidePaymentWebViewScreen> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (url) {
-            setState(() {
-              isLoading = true;
-            });
+            if (mounted) {
+              setState(() {
+                isLoading = true;
+              });
+            }
           },
           onPageFinished: (url) {
-            setState(() {
-              isLoading = false;
-            });
+            if (mounted) {
+              setState(() {
+                isLoading = false;
+              });
+            }
             // If it's adding card, check if the payment is concluded (success or failed via Paymob query params)
             if (widget.isAddingCard &&
                 (url.contains('success=true') ||
                     url.contains('success=false'))) {
               // Card added process completed. Redirect to Wallet.
-              context.pushReplacement(Routes.walletView);
+              if (mounted) {
+                context.pushReplacement(Routes.walletView);
+              }
             }
           },
         ),
@@ -90,9 +96,11 @@ class _RidePaymentWebViewScreenState extends State<RidePaymentWebViewScreen> {
           _removeListener();
 
           // Close Webview and navigate to drive details
-          Navigator.of(context).pop();
-          navigateTo(context, Routes.driveDetailsView,
-              extra: DriveDetailsViewArgs(ride: tripModel));
+          if (mounted) {
+            Navigator.of(context).pop();
+            navigateTo(context, Routes.driveDetailsView,
+                extra: DriveDetailsViewArgs(ride: tripModel));
+          }
         }
       },
     );

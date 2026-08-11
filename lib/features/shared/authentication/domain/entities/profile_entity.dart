@@ -30,6 +30,8 @@ class UserDataEntity {
   final String? gender;
   final int? rewardPoints;
   final int? cashRestrictionSecondsRemaining;
+  final bool? isVip;
+  final VipThemeEntity? vipTheme;
   final ActivePackage? activePackage;
 
   const UserDataEntity({
@@ -50,7 +52,23 @@ class UserDataEntity {
     this.gender,
     this.rewardPoints,
     this.cashRestrictionSecondsRemaining,
+    this.isVip,
+    this.vipTheme,
     this.activePackage,
+  });
+}
+
+class VipThemeEntity {
+  final bool isVip;
+  final String? badgeTitle;
+  final String? primaryColor;
+  final bool showGoldFrame;
+
+  const VipThemeEntity({
+    required this.isVip,
+    this.badgeTitle,
+    this.primaryColor,
+    this.showGoldFrame = false,
   });
 }
 

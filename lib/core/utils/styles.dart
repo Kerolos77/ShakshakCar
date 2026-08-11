@@ -31,6 +31,12 @@ class Styles {
         color: Theme.of(context).textTheme.bodyLarge?.color,
       );
 
+  static TextStyle textStyle12Regular(BuildContext context) => TextStyle(
+        fontSize: 12.sp,
+        fontWeight: FontWeight.w400,
+        color: Theme.of(context).textTheme.bodyLarge?.color,
+      );
+
   static TextStyle textStyle18SemiBold(BuildContext context) => TextStyle(
         fontSize: 18.sp,
         fontWeight: FontWeight.w600,
@@ -44,6 +50,12 @@ class Styles {
       );
 
   static TextStyle textStyle14(BuildContext context) => TextStyle(
+        fontSize: 14.sp,
+        fontWeight: FontWeight.w400,
+        color: Theme.of(context).textTheme.bodyLarge?.color,
+      );
+
+  static TextStyle textStyle14Regular(BuildContext context) => TextStyle(
         fontSize: 14.sp,
         fontWeight: FontWeight.w400,
         color: Theme.of(context).textTheme.bodyLarge?.color,
@@ -141,6 +153,12 @@ class Styles {
 
   static TextStyle textStyle16Bold(BuildContext context) => TextStyle(
         fontSize: 16.sp,
+        fontWeight: FontWeight.w700,
+        color: Theme.of(context).textTheme.bodyLarge?.color,
+      );
+
+  static TextStyle textStyle15Bold(BuildContext context) => TextStyle(
+        fontSize: 15.sp,
         fontWeight: FontWeight.w700,
         color: Theme.of(context).textTheme.bodyLarge?.color,
       );
