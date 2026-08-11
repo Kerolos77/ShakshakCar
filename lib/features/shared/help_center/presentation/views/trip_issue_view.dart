@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shakshak/core/extentions/glopal_extentions.dart';
 import 'package:shakshak/core/resources/app_colors.dart';
 import 'package:shakshak/core/services/service_locator.dart';
-import 'package:shakshak/core/services/user_storage_service.dart';
 import 'package:shakshak/core/utils/shared_widgets/custom_button.dart';
 import 'package:shakshak/core/utils/shared_widgets/custom_loading_button.dart';
 import 'package:shakshak/core/utils/shared_widgets/custom_text_field.dart';
@@ -14,9 +13,10 @@ import 'package:shakshak/core/utils/shared_widgets/show_snack_bar.dart';
 import 'package:shakshak/core/utils/styles.dart';
 import 'package:shakshak/core/utils/validations.dart';
 import 'package:shakshak/features/shared/base_layout/presentation/views/base_layout_view.dart';
-import 'package:shakshak/features/shared/contact_us/domain/usecases/get_contact_us_usecase.dart';
-import 'package:shakshak/features/shared/contact_us/domain/usecases/write_us_usecase.dart';
-import 'package:shakshak/features/shared/contact_us/presentation/view_models/contact_us_cubit.dart';
+import 'package:shakshak/features/shared/support_tickets/domain/usecases/create_ticket_usecase.dart';
+import 'package:shakshak/features/shared/support_tickets/domain/usecases/get_my_tickets_usecase.dart';
+import 'package:shakshak/features/shared/support_tickets/presentation/cubit/support_ticket_cubit.dart';
+import 'package:shakshak/features/shared/support_tickets/presentation/cubit/support_ticket_state.dart';
 import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_data.dart';
 import 'package:shakshak/generated/l10n.dart';
 
@@ -42,8 +42,10 @@ class _TripIssueViewState extends State<TripIssueView> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          ContactUsCubit(sl<GetContactUsUseCase>(), sl<WriteUsUseCase>()),
+      create: (context) => SupportTicketCubit(
+        getMyTicketsUseCase: sl<GetMyTicketsUseCase>(),
+        createTicketUseCase: sl<CreateTicketUseCase>(),
+      ),
       child: BaseLayoutView(
         title: S.of(context).reportIssueRecentTrip,
         body: SingleChildScrollView(
@@ -68,13 +70,13 @@ class _TripIssueViewState extends State<TripIssueView> {
                   validator: Validation.validateDescription(context),
                 ),
                 24.ph,
-                BlocConsumer<ContactUsCubit, ContactUsState>(
+                BlocConsumer<SupportTicketCubit, SupportTicketState>(
                   listener: (context, state) {
                     if (!context.mounted) return;
-                    if (state is WriteUsSuccess) {
+                    if (state is TicketCreatedSuccess) {
                       showSnackBar(
                         context,
-                        "${S.of(context).doneSuccessfully}. ${state.writeUsEntity.message ?? ''}",
+                        'تم إرسال تذكرة الدعم بنجاح. رقم التكيت: ${state.ticket.ticketNumber}',
                         S.of(context).doneSuccessfully,
                         AppColors.primaryColor,
                         ContentType.success,
@@ -83,10 +85,10 @@ class _TripIssueViewState extends State<TripIssueView> {
                         Navigator.pop(context);
                       }
                     }
-                    if (state is WriteUsFailure) {
+                    if (state is SupportTicketError) {
                       showSnackBar(
                         context,
-                        state.errorMessage,
+                        state.message,
                         S.of(context).errorOccurred,
                         AppColors.redColor,
                         ContentType.failure,
@@ -94,27 +96,23 @@ class _TripIssueViewState extends State<TripIssueView> {
                     }
                   },
                   builder: (context, state) {
-                    if (state is! WriteUsLoading) {
-                      return CustomButton(
-                        text: S.of(context).submit,
-                        onTap: () {
-                          if (formKey.currentState!.validate()) {
-                            // Prepend Order ID to the description for backend tracking
-                            final fullMessage =
-                                "Trip Issue [ID: ${widget.ride.id}]: ${descriptionController.text}";
-                            final userEmail =
-                                UserStorageService.getUser()?.email ??
-                                    "support@shakshak.com";
-                            context.read<ContactUsCubit>().writeUs(
-                                  email: userEmail,
-                                  description: fullMessage,
-                                );
-                          }
-                        },
-                      );
-                    } else {
+                    if (state is SupportTicketLoading) {
                       return const CustomLoadingButton();
                     }
+                    return CustomButton(
+                      text: S.of(context).submit,
+                      onTap: () {
+                        if (formKey.currentState!.validate()) {
+                          context.read<SupportTicketCubit>().createTicket(
+                                subject:
+                                    'مشكلة في رحلة #${widget.ride.id}',
+                                description: descriptionController.text,
+                                orderId: widget.ride.id,
+                                priority: 'high',
+                              );
+                        }
+                      },
+                    );
                   },
                 ),
               ],

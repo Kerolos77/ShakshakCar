@@ -113,5 +113,9 @@ class ApiConstant {
   static const String markAllNotificationsReadUrl = 'notifications/read-all';
   static const String resolvePaymentUrl = 'order'; // used as order/$id/resolve-payment
 
+  // support tickets
+  static const String myTicketsUrl = 'user/tickets/my-tickets';
+  static const String createTicketUrl = 'user/tickets/create';
+
   static String markNotificationReadUrl(String id) => 'notifications/$id/read';
 }

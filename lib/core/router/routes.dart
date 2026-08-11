@@ -66,4 +66,8 @@ class Routes {
   static const String editProfileView = "/editProfileView";
   static const String couponDetailsView = "/couponDetailsView";
   static const String userCouponsView = "/userCouponsView";
+
+  // Support Tickets
+  static const String supportTicketsView = "/supportTicketsView";
+  static const String createTicketView = "/createTicketView";
 }
