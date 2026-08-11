@@ -46,9 +46,38 @@ import 'package:shakshak/features/shared/coupons/presentation/views/coupon_detai
 import 'package:shakshak/features/shared/coupons/presentation/views/user_coupons_view.dart';
 import 'package:shakshak/features/shared/loyalty/presentation/views/points_view.dart';
 import 'package:shakshak/features/shared/loyalty/presentation/view_models/loyalty_cubit.dart';
+import 'package:shakshak/features/shared/support_tickets/presentation/cubit/support_ticket_cubit.dart';
+import 'package:shakshak/features/shared/support_tickets/presentation/views/create_ticket_view.dart';
+import 'package:shakshak/features/shared/support_tickets/presentation/views/support_tickets_view.dart';
 
 class SharedRoutes {
   static final List<RouteBase> routes = [
+    GoRoute(
+      path: Routes.supportTicketsView,
+      builder: (context, state) => BlocProvider(
+        create: (context) => SupportTicketCubit(
+          getMyTicketsUseCase: sl(),
+          createTicketUseCase: sl(),
+        )..fetchMyTickets(),
+        child: const SupportTicketsView(),
+      ),
+    ),
+    GoRoute(
+      path: Routes.createTicketView,
+      builder: (context, state) {
+        final args = state.extra as Map<String, dynamic>?;
+        return BlocProvider(
+          create: (context) => SupportTicketCubit(
+            getMyTicketsUseCase: sl(),
+            createTicketUseCase: sl(),
+          ),
+          child: CreateTicketView(
+            orderId: args?['orderId'] as int?,
+            prefillSubject: args?['prefillSubject'] as String?,
+          ),
+        );
+      },
+    ),
     GoRoute(
       path: Routes.userCouponsView,
       builder: (context, state) => const UserCouponsView(),

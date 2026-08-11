@@ -124,6 +124,11 @@ import 'package:shakshak/features/shared/shop/domain/usecases/buy_package_usecas
 import 'package:shakshak/features/shared/shop/domain/usecases/get_packages_usecase.dart';
 import 'package:shakshak/features/shared/shop/domain/usecases/get_subscription_status_usecase.dart';
 import 'package:shakshak/features/shared/shop/presentation/view_models/shop_cubit.dart';
+import 'package:shakshak/features/shared/support_tickets/data/repositories/support_ticket_repo_imp.dart';
+import 'package:shakshak/features/shared/support_tickets/domain/repositories/support_ticket_repo.dart';
+import 'package:shakshak/features/shared/support_tickets/domain/usecases/create_ticket_usecase.dart';
+import 'package:shakshak/features/shared/support_tickets/domain/usecases/get_my_tickets_usecase.dart';
+import 'package:shakshak/features/shared/support_tickets/presentation/cubit/support_ticket_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -429,6 +434,19 @@ class ServiceLocator {
           buyPackageUseCase: sl(),
           getSubscriptionStatusUseCase: sl(),
         ));
+
+    // Support Tickets
+    sl.registerLazySingleton<SupportTicketRepo>(() => SupportTicketRepoImp());
+    sl.registerLazySingleton<GetMyTicketsUseCase>(
+        () => GetMyTicketsUseCase(sl()));
+    sl.registerLazySingleton<CreateTicketUseCase>(
+        () => CreateTicketUseCase(sl()));
+    sl.registerFactory<SupportTicketCubit>(
+      () => SupportTicketCubit(
+        getMyTicketsUseCase: sl(),
+        createTicketUseCase: sl(),
+      ),
+    );
   }
 
   Future<void> _initSharedPref() async {

@@ -235,6 +235,15 @@ class HelpCenterView extends StatelessWidget {
         // 8.ph,
         _buildContactItem(
           context,
+          title: 'تذاكر الدعم الفني',
+          subtitle: 'تتبع مشاكلك وتواصل مع فريق الدعم',
+          icon: Icons.support_agent_rounded,
+          color: Colors.teal,
+          onTap: () => navigateTo(context, Routes.supportTicketsView),
+        ),
+        8.ph,
+        _buildContactItem(
+          context,
           title: S.of(context).callUs,
           subtitle:
               S.of(context).callSupportTeam ?? "تحدث هاتفياً مع أحد ممثلينا",
