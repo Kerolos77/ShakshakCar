@@ -40,6 +40,11 @@ class BookRideSheetContent extends StatefulWidget {
   final ValueChanged<DateTime> onDateChanged;
   final ValueChanged<int> onPassengerCountChanged;
 
+  // Shipping fields
+  final bool isShipping;
+  final String? parcelWeight;
+  final String? parcelDimension;
+
   const BookRideSheetContent({
     super.key,
     required this.scrollController,
@@ -62,6 +67,9 @@ class BookRideSheetContent extends StatefulWidget {
     required this.passengerCount,
     required this.onDateChanged,
     required this.onPassengerCountChanged,
+    this.isShipping = false,
+    this.parcelWeight,
+    this.parcelDimension,
   });
 
   @override
@@ -71,7 +79,11 @@ class BookRideSheetContent extends StatefulWidget {
 class _BookRideSheetContentState extends State<BookRideSheetContent> {
   @override
   void initState() {
-    context.read<UserHomeCubit>().getServices(widget.isInCity ? 'rides' : 'travels');
+    if (widget.isShipping) {
+      context.read<UserHomeCubit>().getServices('shipping');
+    } else {
+      context.read<UserHomeCubit>().getServices(widget.isInCity ? 'rides' : 'travels');
+    }
     _dateController.text =
         DateFormat('yyyy-MM-dd HH:mm').format(widget.scheduledDate);
     super.initState();
@@ -91,8 +103,12 @@ class _BookRideSheetContentState extends State<BookRideSheetContent> {
       _dateController.text =
           DateFormat('yyyy-MM-dd HH:mm').format(widget.scheduledDate);
     }
-    if (oldWidget.isInCity != widget.isInCity) {
-      context.read<UserHomeCubit>().getServices(widget.isInCity ? 'rides' : 'travels');
+    if (oldWidget.isInCity != widget.isInCity || oldWidget.isShipping != widget.isShipping) {
+      if (widget.isShipping) {
+        context.read<UserHomeCubit>().getServices('shipping');
+      } else {
+        context.read<UserHomeCubit>().getServices(widget.isInCity ? 'rides' : 'travels');
+      }
     }
     super.didUpdateWidget(oldWidget);
   }
@@ -159,6 +175,7 @@ class _BookRideSheetContentState extends State<BookRideSheetContent> {
                       onSliderChanged: (_) {},
                       onResetPrice: (_) {},
                       isInCity: widget.isInCity,
+                      isShipping: widget.isShipping,
                     ),
                   ),
                   RideActionsBar(
@@ -173,13 +190,23 @@ class _BookRideSheetContentState extends State<BookRideSheetContent> {
               ),
             );
           } else if (state is GetPriceSuccess) {
+            final filteredServices = widget.isShipping
+                ? state.servicesDetails.where((s) {
+                    return _isServiceCompatible(
+                      serviceName: s.service.name ?? '',
+                      selectedWeight: widget.parcelWeight ?? 'light',
+                      selectedDimension: widget.parcelDimension ?? '',
+                    );
+                  }).toList()
+                : state.servicesDetails;
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: RideServicesList(
                     scrollController: widget.scrollController,
-                    services: state.servicesDetails,
+                    services: filteredServices,
                     selectedServiceIndex: widget.selectedServiceIndex,
                     onServiceSelected: widget.onServiceSelected,
                     currentOffer: widget.currentOffer,
@@ -190,6 +217,7 @@ class _BookRideSheetContentState extends State<BookRideSheetContent> {
                     onSliderChanged: widget.onSliderChanged,
                     onResetPrice: widget.onResetPrice,
                     isInCity: widget.isInCity,
+                    isShipping: widget.isShipping,
                   ),
                 ),
                 SizedBox(height: 10.h),
@@ -329,90 +357,92 @@ class _BookRideSheetContentState extends State<BookRideSheetContent> {
                   ),
                 ),
               ),
-              SizedBox(width: 12.w),
-              // Simplified Passenger Counter
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12.r),
-                  border: Border.all(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? AppColors.darkSecondary
-                          : Theme.of(context)
-                              .primaryColor
-                              .withOpacity(0.5)),
-                ),
-                child: Row(
-                  children: [
-                    _buildCounterBtn(
-                      icon: Icons.remove,
-                      onTap: widget.passengerCount > 1
-                          ? () => widget.onPassengerCountChanged(
-                              widget.passengerCount - 1)
-                          : null,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 10.w),
-                      child: Row(
-                        children: [
-                          Icon(Icons.person,
-                              size: 16.sp, color: Theme.of(context).hintColor),
-                          SizedBox(width: 4.w),
-                          Text(
-                            widget.passengerCount.toString(),
-                            style: Styles.textStyle16Bold(context),
-                          ),
-                        ],
-                      ),
-                    ),
-                    _buildCounterBtn(
-                      icon: Icons.add,
-                      onTap: widget.passengerCount < 6
-                          ? () => widget.onPassengerCountChanged(
-                              widget.passengerCount + 1)
-                          : null,
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(width: 12.w),
-              // Smart Female Only Toggle
-              if (UserStorageService.getUser()?.gender == 'female')
-              BlocBuilder<UserHomeCubit, UserHomeState>(
-                builder: (context, state) {
-                  final cubit = context.read<UserHomeCubit>();
-                  final isActive = cubit.isFemaleOnly;
-                  return InkWell(
-                    onTap: () => cubit.toggleFemaleOnly(!isActive),
+              if (!widget.isShipping) ...[
+                SizedBox(width: 12.w),
+                // Simplified Passenger Counter
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12.r),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 12.w, vertical: 10.h),
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? Colors.pinkAccent.withOpacity(0.1)
+                    border: Border.all(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.darkSecondary
                             : Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                          color: isActive
-                              ? Colors.pinkAccent
-                              : Theme.of(context).dividerColor,
+                                .primaryColor
+                                .withOpacity(0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      _buildCounterBtn(
+                        icon: Icons.remove,
+                        onTap: widget.passengerCount > 1
+                            ? () => widget.onPassengerCountChanged(
+                                widget.passengerCount - 1)
+                            : null,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10.w),
+                        child: Row(
+                          children: [
+                            Icon(Icons.person,
+                                size: 16.sp, color: Theme.of(context).hintColor),
+                            SizedBox(width: 4.w),
+                            Text(
+                              widget.passengerCount.toString(),
+                              style: Styles.textStyle16Bold(context),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Icon(
-                        Icons.female,
-                        color: isActive
-                            ? Colors.pinkAccent
-                            : Theme.of(context).hintColor,
-                        size: 20.sp,
+                      _buildCounterBtn(
+                        icon: Icons.add,
+                        onTap: widget.passengerCount < 6
+                            ? () => widget.onPassengerCountChanged(
+                                widget.passengerCount + 1)
+                            : null,
                       ),
-                    ),
-                  );
-                },
-              ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                // Smart Female Only Toggle
+                if (UserStorageService.getUser()?.gender == 'female')
+                BlocBuilder<UserHomeCubit, UserHomeState>(
+                  builder: (context, state) {
+                    final cubit = context.read<UserHomeCubit>();
+                    final isActive = cubit.isFemaleOnly;
+                    return InkWell(
+                      onTap: () => cubit.toggleFemaleOnly(!isActive),
+                      borderRadius: BorderRadius.circular(12.r),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.w, vertical: 10.h),
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? Colors.pinkAccent.withOpacity(0.1)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(12.r),
+                          border: Border.all(
+                            color: isActive
+                                ? Colors.pinkAccent
+                                : Theme.of(context).dividerColor,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.female,
+                          color: isActive
+                              ? Colors.pinkAccent
+                              : Theme.of(context).hintColor,
+                          size: 20.sp,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ],
           ),
         ],
@@ -449,5 +479,51 @@ class _BookRideSheetContentState extends State<BookRideSheetContent> {
                 : Theme.of(context).colorScheme.onSurface),
       ),
     );
+  }
+
+  bool _isServiceCompatible({
+    required String serviceName,
+    required String selectedWeight,
+    required String selectedDimension,
+  }) {
+    final name = serviceName.toLowerCase();
+    
+    // Determine vehicle type
+    final bool isMotorcycle = name.contains('موتوسيكل') || 
+                             name.contains('motorcycle') || 
+                             name.contains('bike') || 
+                             name.contains('فيسبا') || 
+                             name.contains('vespa') || 
+                             (name.contains('سيكل') && !name.contains('تروسيكل'));
+    
+    final bool isTricycle = name.contains('تروسيكل') || 
+                           name.contains('tricycle');
+
+    // Check if the dimension is a large package/electronics/other
+    final dim = selectedDimension.toLowerCase();
+    final bool isLargePackage = dim.contains('طرد') || 
+                                dim.contains('كرتونة') || 
+                                dim.contains('box') || 
+                                dim.contains('parcel') || 
+                                dim.contains('أخرى') || 
+                                dim.contains('other') ||
+                                dim.contains('أجهزة') ||
+                                dim.contains('electronics');
+
+    // 1. Check Motorcycle compatibility:
+    // - Only supports 'light' weight (0-5 Kg).
+    // - Cannot carry large/bulky items.
+    if (isMotorcycle) {
+      if (selectedWeight != 'light') return false;
+      if (isLargePackage) return false;
+    }
+
+    // 2. Check Tricycle compatibility:
+    // - Only supports 'light' and 'medium' weights (up to 20 Kg).
+    if (isTricycle) {
+      if (selectedWeight == 'heavy') return false;
+    }
+
+    return true;
   }
 }

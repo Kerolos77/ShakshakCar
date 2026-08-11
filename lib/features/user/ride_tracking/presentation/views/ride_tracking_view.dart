@@ -291,8 +291,49 @@ class _RideTrackingViewBodyState extends State<RideTrackingViewBody> {
                   ),
                 ),
 
-                // ⬆️ Restore Arrow Button
-                if (_isMinimized)
+                // ⬆️ Restore Arrow Button & Floating OTP Badge
+                if (_isMinimized) ...[
+                  if (currentRide.displayOtp != null && currentRide.displayOtp!.isNotEmpty)
+                    Positioned(
+                      bottom: 30.h,
+                      left: 20.w,
+                      child: FadeInUp(
+                        duration: const Duration(milliseconds: 300),
+                        child: GestureDetector(
+                          onTap: () => setState(() => _isMinimized = false),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor,
+                              borderRadius: BorderRadius.circular(20.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.key_rounded, color: Colors.white, size: 18),
+                                6.pw,
+                                Text(
+                                  'OTP: ${currentRide.displayOtp}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 2.w,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   Positioned(
                     bottom: 30.h,
                     right: 20.w,
@@ -306,6 +347,7 @@ class _RideTrackingViewBodyState extends State<RideTrackingViewBody> {
                       ),
                     ),
                   ),
+                ],
 
                 if (!showOverlay &&
                     (state is RideTrackingArrived ||
@@ -382,8 +424,21 @@ class _RideTrackingViewBodyState extends State<RideTrackingViewBody> {
   }
 
   bool _isMotorcycle(NewRideDataEntity ride) {
-    // بناءً على طلبك بجعل الموتوسيكل هو الأساسي بدلاً من السيارة
-    return true; 
+    final vehicleType = ride.vehicleType?.toLowerCase().trim() ?? '';
+    if (vehicleType == 'motorcycle' || vehicleType == 'moto' || vehicleType == 'scooter') {
+      return true;
+    }
+    if (vehicleType == 'car' || vehicleType == 'truck') {
+      return false;
+    }
+
+    // Fallback logic based on carBrand, carModel, and serviceType text
+    final textToCheck = '${ride.carBrand ?? ''} ${ride.carModel ?? ''} ${ride.serviceType}'.toLowerCase();
+    return textToCheck.contains('moto') ||
+        textToCheck.contains('scooter') ||
+        textToCheck.contains('موتوسيكل') ||
+        textToCheck.contains('سكوتر') ||
+        textToCheck.contains('دراجة');
   }
 
   bool _canCancelStatus(String status) {

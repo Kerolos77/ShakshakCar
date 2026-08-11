@@ -115,6 +115,15 @@ class UserDrawerListItems extends StatelessWidget {
           },
         ),
         CustomDrawerItem(
+          title: S.of(context).discountCoupons,
+          icon: Icons.local_offer_rounded,
+          isSelected: false,
+          onTap: () {
+            Scaffold.of(context).closeDrawer();
+            navigateTo(context, Routes.userCouponsView);
+          },
+        ),
+        CustomDrawerItem(
           title: S.of(context).packagesStore,
           icon: Icons.store_mall_directory_rounded,
           isSelected: false,

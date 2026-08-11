@@ -182,3 +182,18 @@ final class TripStatusChanged extends UserHomeState {
 
   TripStatusChanged({required this.status, required this.tripModel});
 }
+
+final class VerifyReceiverOtpLoading extends UserHomeState {}
+
+final class VerifyReceiverOtpSuccess extends UserHomeState {
+  final int orderId;
+  final String message;
+
+  VerifyReceiverOtpSuccess({required this.orderId, required this.message});
+}
+
+final class VerifyReceiverOtpFailure extends UserHomeState {
+  final String errorMessage;
+
+  VerifyReceiverOtpFailure({required this.errorMessage});
+}

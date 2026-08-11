@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{url}}/order/offer/741/150"
+  url: "{{url}}/order/offer/1001/150"
   auth:
     type: bearer
     token: "{{tokenDriver}}"

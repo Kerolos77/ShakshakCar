@@ -34,6 +34,9 @@ import 'package:shakshak/features/user/user_home/domain/usecases/get_active_ride
 import 'package:shakshak/features/shared/chat/domain/repositories/chat_repo.dart';
 import 'package:shakshak/features/shared/chat/data/repo/chat_repo_imp.dart';
 import 'package:shakshak/features/shared/chat/domain/usecases/send_message_usecase.dart';
+import 'package:shakshak/features/shared/coupons/domain/repositories/coupon_repo.dart';
+import 'package:shakshak/features/shared/coupons/data/repositories/coupon_repo_imp.dart';
+import 'package:shakshak/features/shared/coupons/presentation/cubit/coupon_cubit.dart';
 import 'package:shakshak/features/shared/contact_us/domain/repositories/contact_us_repo.dart';
 import 'package:shakshak/features/shared/contact_us/data/repo/contact_us_repo_imp.dart';
 import 'package:shakshak/features/shared/contact_us/domain/usecases/get_contact_us_usecase.dart';
@@ -274,6 +277,12 @@ class ServiceLocator {
     );
     sl.registerLazySingleton<ReviewRepo>(
       () => ReviewRepoImp(),
+    );
+    sl.registerLazySingleton<CouponRepo>(
+      () => CouponRepoImp(),
+    );
+    sl.registerFactory<CouponCubit>(
+      () => CouponCubit(couponRepo: sl()),
     );
     sl.registerLazySingleton<SubmitReviewUseCase>(
       () => SubmitReviewUseCase(sl()),

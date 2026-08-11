@@ -82,7 +82,11 @@ class NewRideData implements NewRideDataEntity {
   final bool paid;
   final String paymentType;
   final int numberOfPassenger;
+  @override
   final String serviceType;
+  @override
+  final String? vehicleType;
+  @override
   final int reviewsCount;
   final bool hasReview;
   final NewRideUser? driver;
@@ -103,6 +107,25 @@ class NewRideData implements NewRideDataEntity {
   final String? pickupOtp;
   @override
   final String? deliveryOtp;
+  @override
+  final String? receiverVerificationOtp;
+  @override
+  final bool isReceiverVerified;
+  @override
+  final String? receiverPhone;
+  @override
+  final String? receiverName;
+  @override
+  final bool isShippingOrder;
+
+  @override
+  String? get displayOtp {
+    if (pickupOtp != null && pickupOtp!.trim().isNotEmpty) return pickupOtp;
+    if (deliveryOtp != null && deliveryOtp!.trim().isNotEmpty) return deliveryOtp;
+    if (receiverVerificationOtp != null && receiverVerificationOtp!.trim().isNotEmpty) return receiverVerificationOtp;
+    return null;
+  }
+
 
   NewRideData({
     required this.id,
@@ -127,6 +150,7 @@ class NewRideData implements NewRideDataEntity {
     required this.paymentType,
     required this.numberOfPassenger,
     required this.serviceType,
+    this.vehicleType,
     required this.reviewsCount,
     required this.hasReview,
     this.driver,
@@ -143,6 +167,11 @@ class NewRideData implements NewRideDataEntity {
     this.offers = const [],
     this.pickupOtp,
     this.deliveryOtp,
+    this.receiverVerificationOtp,
+    this.isReceiverVerified = false,
+    this.receiverPhone,
+    this.receiverName,
+    this.isShippingOrder = false,
   });
 
   NewRideData copyWith({
@@ -184,6 +213,10 @@ class NewRideData implements NewRideDataEntity {
     List<OfferModel>? offers,
     String? pickupOtp,
     String? deliveryOtp,
+    String? receiverVerificationOtp,
+    bool? isReceiverVerified,
+    String? receiverPhone,
+    String? receiverName,
   }) {
     return NewRideData(
       id: id ?? this.id,
@@ -224,6 +257,10 @@ class NewRideData implements NewRideDataEntity {
       offers: offers ?? this.offers,
       pickupOtp: pickupOtp ?? this.pickupOtp,
       deliveryOtp: deliveryOtp ?? this.deliveryOtp,
+      receiverVerificationOtp: receiverVerificationOtp ?? this.receiverVerificationOtp,
+      isReceiverVerified: isReceiverVerified ?? this.isReceiverVerified,
+      receiverPhone: receiverPhone ?? this.receiverPhone,
+      receiverName: receiverName ?? this.receiverName,
     );
   }
 
@@ -265,6 +302,10 @@ class NewRideData implements NewRideDataEntity {
       offers: other.offers.isNotEmpty ? other.offers.cast<OfferModel>() : offers,
       pickupOtp: other.pickupOtp?.isNotEmpty == true ? other.pickupOtp : pickupOtp,
       deliveryOtp: other.deliveryOtp?.isNotEmpty == true ? other.deliveryOtp : deliveryOtp,
+      receiverVerificationOtp: other.receiverVerificationOtp?.isNotEmpty == true ? other.receiverVerificationOtp : receiverVerificationOtp,
+      isReceiverVerified: other.isReceiverVerified,
+      receiverPhone: other.receiverPhone?.isNotEmpty == true ? other.receiverPhone : receiverPhone,
+      receiverName: other.receiverName?.isNotEmpty == true ? other.receiverName : receiverName,
     );
   }
 
@@ -380,6 +421,7 @@ class NewRideData implements NewRideDataEntity {
       numberOfPassenger:
           _int(json['number_of_passenger'] ?? json['numberOfPassenger']),
       serviceType: _string(json['service_type'] ?? json['serviceType']),
+      vehicleType: json['vehicle_type']?.toString() ?? json['vehicleType']?.toString(),
       reviewsCount: _int(json['reviews_count'] ?? json['reviewsCount']),
       hasReview: json['has_review'] == true || json['hasReview'] == true,
       driver: json['driver'] is Map<String, dynamic>
@@ -417,8 +459,13 @@ class NewRideData implements NewRideDataEntity {
               .map((o) => OfferModel.fromJson(o))
               .toList()
           : const [],
-      pickupOtp: _string(json['pickup_otp'] ?? json['pickupOtp']),
+      pickupOtp: _string(json['pickup_otp'] ?? json['pickupOtp'] ?? json['otp'] ?? json['code'] ?? json['pin']),
       deliveryOtp: _string(json['delivery_otp'] ?? json['deliveryOtp']),
+      receiverVerificationOtp: _string(json['receiver_verification_otp'] ?? json['receiverVerificationOtp']),
+      isReceiverVerified: _bool(json['is_receiver_verified'] ?? json['isReceiverVerified']),
+      receiverPhone: _string(json['receiver_phone'] ?? json['receiverPhone']),
+      receiverName: _string(json['receiver_name'] ?? json['receiverName']),
+      isShippingOrder: _bool(json['is_shipping_order'] ?? json['isShippingOrder']),
     );
   }
 }

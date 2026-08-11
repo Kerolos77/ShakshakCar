@@ -155,7 +155,7 @@ class ShipmentCubit extends Cubit<ShipmentState> {
       sourceLat: locationCubit.sourcePlace!.lat!.toString(),
       sourceLong: locationCubit.sourcePlace!.lng!.toString(),
       offerRate: "0",
-      interCity: distance > 100, // Toggle interCity if distance exceeds 100km
+      interCity: false,
       paymentType: mappedPaymentType,
       savedCardId: mappedCardId,
       whenDate: DateTime.now(),

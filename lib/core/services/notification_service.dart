@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shakshak/firebase_options.dart';
 import 'package:shakshak/core/services/audio_service.dart';
@@ -9,7 +13,6 @@ import 'package:shakshak/core/services/service_locator.dart';
 import 'package:shakshak/features/shared/notifications/presentation/manager/notification_cubit.dart';
 import 'package:shakshak/core/services/notification_router_helper.dart';
 import 'package:shakshak/core/router/app_router.dart';
-import 'dart:convert';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -152,35 +155,104 @@ class NotificationService {
 
   Future<void> _showLocalNotification(RemoteMessage message) async {
     RemoteNotification? notification = message.notification;
-    AndroidNotification? android = message.notification?.android;
+    Map<String, dynamic> data = message.data;
 
-    if (notification != null && android != null) {
-      await _localNotifications.show(
-        id: notification.hashCode,
-        title: notification.title,
-        body: notification.body,
-        notificationDetails: const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'high_importance_channel',
-            'High Importance Notifications',
-            channelDescription:
-                'This channel is used for important notifications.',
-            importance: Importance.max,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-            playSound: true,
-            sound: RawResourceAndroidNotificationSound('notification'),
-          ),
-          iOS: DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-            sound: 'notification.mp3',
-          ),
-        ),
-        payload: message.data.toString(),
-      );
+    String title = notification?.title ?? data['title'] ?? '';
+    String body = notification?.body ?? data['body'] ?? '';
+
+    // Extract image URL if available
+    String? imageUrl = notification?.android?.imageUrl ??
+        notification?.apple?.imageUrl ??
+        data['image'] ??
+        data['image_url'] ??
+        data['imageUrl'] ??
+        data['picture'] ??
+        data['photo'];
+
+    if (title.isEmpty && body.isEmpty) return;
+
+    StyleInformation? styleInformation;
+    if (_isValidUrl(imageUrl)) {
+      try {
+        final Uri? parsedUri = Uri.tryParse(imageUrl!.trim());
+        if (parsedUri != null && (parsedUri.scheme == 'http' || parsedUri.scheme == 'https')) {
+          final http.Response response =
+              await http.get(parsedUri).timeout(const Duration(seconds: 4));
+          if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
+            final Directory tempDir = await getTemporaryDirectory();
+            final String filePath =
+                '${tempDir.path}/notif_img_${DateTime.now().millisecondsSinceEpoch}.jpg';
+            final File file = File(filePath);
+            await file.writeAsBytes(response.bodyBytes);
+
+            styleInformation = BigPictureStyleInformation(
+              FilePathAndroidBitmap(filePath),
+              largeIcon: FilePathAndroidBitmap(filePath),
+              contentTitle: title,
+              summaryText: body,
+              htmlFormatContentTitle: true,
+              htmlFormatSummaryText: true,
+            );
+          }
+        }
+      } catch (e) {
+        debugPrint("Error downloading notification image safely: $e");
+      }
     }
+
+    styleInformation ??= BigTextStyleInformation(
+      body,
+      contentTitle: title,
+      htmlFormatContentTitle: true,
+      htmlFormatBigText: true,
+    );
+
+    // Merge payload data
+    final Map<String, dynamic> payloadMap = Map<String, dynamic>.from(data);
+    payloadMap['title'] = title;
+    payloadMap['body'] = body;
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      payloadMap['imageUrl'] = imageUrl;
+    }
+
+    await _localNotifications.show(
+      id: notification.hashCode != 0
+          ? notification.hashCode
+          : DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title: title,
+      body: body,
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          'high_importance_channel',
+          'High Importance Notifications',
+          channelDescription:
+              'This channel is used for important notifications.',
+          importance: Importance.max,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+          color: const Color(0xFF6D28D9),
+          ledColor: const Color(0xFF6D28D9),
+          ledOnMs: 1000,
+          ledOffMs: 500,
+          enableLights: true,
+          enableVibration: true,
+          styleInformation: styleInformation,
+          subText: 'ShakShak Car',
+          ticker: title,
+          visibility: NotificationVisibility.public,
+          playSound: true,
+          sound: const RawResourceAndroidNotificationSound('notification'),
+        ),
+        iOS: const DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          sound: 'notification.mp3',
+          interruptionLevel: InterruptionLevel.active,
+        ),
+      ),
+      payload: jsonEncode(payloadMap),
+    );
   }
 
   Future<String?> getToken() async {
@@ -189,6 +261,14 @@ class NotificationService {
 
   Future<void> deleteToken() async {
     await _fcm.deleteToken();
+  }
+
+  bool _isValidUrl(String? url) {
+    if (url == null || url.trim().isEmpty) return false;
+    final clean = url.trim().toLowerCase();
+    if (clean == 'null' || clean == 'undefined' || clean == 'false' || clean == 'none') return false;
+    final uri = Uri.tryParse(url.trim());
+    return uri != null && (uri.scheme == 'http' || uri.scheme == 'https');
   }
 
   static Future<void> onBackgroundMessage(RemoteMessage message) async {

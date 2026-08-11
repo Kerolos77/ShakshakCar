@@ -305,4 +305,34 @@ class UserHomeRepoImp implements UserHomeRepo {
       return left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, bool>> verifyReceiverOtp({
+    required int orderId,
+    required String otp,
+  }) async {
+    try {
+      final String token = CacheHelper.getData(key: AppConstant.kToken) ?? '';
+      var response = await DioHelper.postData(
+        url: 'orders/$orderId/verify-receiver-otp',
+        token: token,
+        data: {
+          'otp': otp,
+        },
+      );
+      if (response.data is Map<String, dynamic>) {
+        final Map<String, dynamic> resData = response.data;
+        if (resData['statusval'] == false || resData['status'] == false || resData['status'] == 400) {
+          final String errorMsg = resData['msg'] ?? resData['message'] ?? 'كود التأكيد غير صحيح';
+          return left(ServerFailure(errorMsg));
+        }
+      }
+      return right(response.statusCode == 200);
+    } catch (e) {
+      if (e is DioException) {
+        return left(ServerFailure.fromDioError(e));
+      }
+      return left(ServerFailure(e.toString()));
+    }
+  }
 }

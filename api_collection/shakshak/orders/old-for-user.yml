@@ -5,11 +5,12 @@ info:
 
 http:
   method: GET
-  url: "{{url}}/order/old-for-user?in_city=0"
+  url: "{{url}}/order/old-for-user"
   params:
     - name: in_city
       value: "0"
       type: query
+      disabled: true
   body:
     type: multipart-form
     data:

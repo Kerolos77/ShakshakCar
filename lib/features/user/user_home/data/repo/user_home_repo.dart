@@ -1,4 +1,4 @@
-﻿import 'package:dartz/dartz.dart';
+import 'package:dartz/dartz.dart';
 import 'package:shakshak/features/shared/rides/data/models/rides_model.dart';
 import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_data.dart';
 import 'package:shakshak/features/user/user_home/data/models/user_home_caption_model.dart';
@@ -43,6 +43,11 @@ abstract class UserHomeRepo {
   Future<Either<Failure, dynamic>> getNearbyDrivers({
     required double latitude,
     required double longitude,
+  });
+
+  Future<Either<Failure, bool>> verifyReceiverOtp({
+    required int orderId,
+    required String otp,
   });
 }
 

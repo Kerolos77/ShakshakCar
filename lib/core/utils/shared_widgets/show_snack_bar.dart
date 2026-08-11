@@ -4,6 +4,7 @@ import 'package:shakshak/core/resources/app_colors.dart';
 
 void showSnackBar(BuildContext context, String message, String title,
     Color? color, ContentType contentType) {
+  if (!context.mounted) return;
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
     elevation: 0,
     behavior: SnackBarBehavior.floating,

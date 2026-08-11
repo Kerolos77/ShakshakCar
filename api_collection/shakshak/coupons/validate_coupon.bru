@@ -1,0 +1,24 @@
+meta {
+  name: 2. Validate Coupon Code
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{url}}/coupons/validate
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{tokenUser}}
+}
+
+body:json {
+  {
+    "code": "RRR",
+    "service_id": 1,
+    "order_amount": 150.00
+  }
+}

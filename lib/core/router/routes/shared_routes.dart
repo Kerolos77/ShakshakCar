@@ -42,11 +42,34 @@ import 'package:shakshak/features/shared/wallet/presentation/views/payment_view.
 import 'package:shakshak/features/shared/wallet/presentation/views/wallet_view.dart';
 import 'package:shakshak/features/shared/wallet/presentation/views/withdraw_history_view.dart';
 import 'package:shakshak/features/user/user_home/data/models/new-ride/new_ride_data.dart';
+import 'package:shakshak/features/shared/coupons/presentation/views/coupon_details_view.dart';
+import 'package:shakshak/features/shared/coupons/presentation/views/user_coupons_view.dart';
 import 'package:shakshak/features/shared/loyalty/presentation/views/points_view.dart';
 import 'package:shakshak/features/shared/loyalty/presentation/view_models/loyalty_cubit.dart';
 
 class SharedRoutes {
   static final List<RouteBase> routes = [
+    GoRoute(
+      path: Routes.userCouponsView,
+      builder: (context, state) => const UserCouponsView(),
+    ),
+    GoRoute(
+      path: Routes.couponDetailsView,
+      builder: (context, state) {
+        final args = state.extra as Map<String, dynamic>?;
+        return CouponDetailsView(
+          title: args?['title'] ?? 'كوبون خصم',
+          description: args?['description'] ?? args?['body'] ?? '',
+          code: args?['code'] ?? args?['coupon_code'] ?? args?['couponCode'] ?? 'SHAKSHAK',
+          discountText: args?['discountText'] ?? args?['discount'],
+          expiryDateStr: args?['expiryDateStr'] ?? args?['expiry_date'],
+          imageUrl: args?['imageUrl'] ?? args?['image'],
+          minSpend: args?['minSpend'] != null
+              ? double.tryParse(args!['minSpend'].toString())
+              : null,
+        );
+      },
+    ),
     GoRoute(
       path: Routes.pointsView,
       builder: (context, state) {
@@ -209,6 +232,7 @@ class SharedRoutes {
         return NotificationDetailsView(
           title: args?['title'] ?? 'إشعار',
           body: args?['body'] ?? '',
+          imageUrl: args?['imageUrl'] ?? args?['image'],
         );
       },
     ),

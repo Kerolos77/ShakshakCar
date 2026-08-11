@@ -1,0 +1,31 @@
+info:
+  name: dispatch-settings
+  type: http
+  seq: 23
+
+http:
+  method: POST
+  url: "{{url}}/admin/dispatch-settings"
+  auth:
+    type: bearer
+    token: "{{tokenAdmin}}"
+  body:
+    type: json
+    json: |-
+      {
+        "max_cash_pickup_distance_km": 10.0,
+        "max_card_pickup_distance_km": 15.0,
+        "destination_mode_tolerance_km": 5.0,
+        "auto_cash_ban_enabled": 1,
+        "max_driver_cash_debt_limit": 200.00,
+        "cash_restriction_duration_minutes": 60,
+        "max_consecutive_cancellations_before_ban": 3,
+        "min_driver_rating_for_cash": 4.00,
+        "dispatch_priority_strategy": "distance"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

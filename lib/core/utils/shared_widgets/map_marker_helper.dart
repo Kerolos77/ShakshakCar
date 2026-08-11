@@ -82,7 +82,8 @@ class MapMarkerHelper {
         );
     final ByteData? data =
         await image.toByteData(format: ui.ImageByteFormat.png);
-    final descriptor = BitmapDescriptor.fromBytes(data!.buffer.asUint8List());
+    if (data == null) return BitmapDescriptor.defaultMarker;
+    final descriptor = BitmapDescriptor.fromBytes(data.buffer.asUint8List());
 
     // نحفظه في الـ Cache عشان المرة الجاية
     _circleMarkerCache[cacheKey] = descriptor;
@@ -160,7 +161,8 @@ class MapMarkerHelper {
         );
     final ByteData? data =
         await image.toByteData(format: ui.ImageByteFormat.png);
-    final descriptor = BitmapDescriptor.fromBytes(data!.buffer.asUint8List());
+    if (data == null) return BitmapDescriptor.defaultMarker;
+    final descriptor = BitmapDescriptor.fromBytes(data.buffer.asUint8List());
 
     _infoMarkerCache[cacheKey] = descriptor;
     return descriptor;
@@ -174,38 +176,43 @@ class MapMarkerHelper {
       return _carMarkerCache[cacheKey]!;
     }
 
-    // ✅ تحميل الأفاتار الجديد من الـ Assets
-    final String path =
-        isMotorcycle ? 'assets/models/motocycle.png' : 'assets/models/car.png';
+    try {
+      final String path =
+          isMotorcycle ? 'assets/models/motocycle.png' : 'assets/models/car.png';
 
-    final ByteData data = await rootBundle.load(path);
-    final ui.Codec codec = await ui.instantiateImageCodec(
-      data.buffer.asUint8List(),
-      targetWidth: 100, // تصغير الحجم
-    );
-    final ui.FrameInfo fi = await codec.getNextFrame();
-    final ui.Image image = fi.image;
+      final ByteData data = await rootBundle.load(path);
+      final ui.Codec codec = await ui.instantiateImageCodec(
+        data.buffer.asUint8List(),
+        targetWidth: 100,
+      );
+      final ui.FrameInfo fi = await codec.getNextFrame();
+      final ui.Image image = fi.image;
 
-    final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
-    final Canvas canvas = Canvas(pictureRecorder);
-    final Paint paint = Paint()
-      ..colorFilter = ui.ColorFilter.mode(color, ui.BlendMode.modulate);
+      final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
+      final Canvas canvas = Canvas(pictureRecorder);
+      final Paint paint = Paint()
+        ..colorFilter = ui.ColorFilter.mode(color, ui.BlendMode.modulate);
 
-    canvas.drawImage(image, Offset.zero, paint);
+      canvas.drawImage(image, Offset.zero, paint);
 
-    final ui.Image tintedImage = await pictureRecorder.endRecording().toImage(
-          image.width,
-          image.height,
-        );
+      final ui.Image tintedImage = await pictureRecorder.endRecording().toImage(
+            image.width,
+            image.height,
+          );
 
-    final ByteData? byteData =
-        await tintedImage.toByteData(format: ui.ImageByteFormat.png);
+      final ByteData? byteData =
+          await tintedImage.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
 
-    final descriptor =
-        BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+      final descriptor =
+          BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
 
-    _carMarkerCache[cacheKey] = descriptor;
-    return descriptor;
+      _carMarkerCache[cacheKey] = descriptor;
+      return descriptor;
+    } catch (e) {
+      debugPrint("⚠️ Error creating vehicle marker bitmap: $e");
+      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
+    }
   }
 
   static Future<BitmapDescriptor> create3DCarMarkerBitmap() async {
@@ -214,33 +221,40 @@ class MapMarkerHelper {
       return _carMarkerCache[cacheKey]!;
     }
 
-    final ByteData data = await rootBundle.load('assets/images/car_marker_3d.png');
-    final ui.Codec codec = await ui.instantiateImageCodec(
-      data.buffer.asUint8List(),
-      targetWidth: 100, // appropriate size for map marker
-    );
-    final ui.FrameInfo fi = await codec.getNextFrame();
-    final ui.Image image = fi.image;
+    try {
+      final ByteData data = await rootBundle.load('assets/images/car_marker_3d.png');
+      final ui.Codec codec = await ui.instantiateImageCodec(
+        data.buffer.asUint8List(),
+        targetWidth: 100,
+      );
+      final ui.FrameInfo fi = await codec.getNextFrame();
+      final ui.Image image = fi.image;
 
-    final ByteData? byteData =
-        await image.toByteData(format: ui.ImageByteFormat.png);
+      final ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
 
-    final descriptor =
-        BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
+      final descriptor =
+          BitmapDescriptor.fromBytes(byteData.buffer.asUint8List());
 
-    _carMarkerCache[cacheKey] = descriptor;
-    return descriptor;
+      _carMarkerCache[cacheKey] = descriptor;
+      return descriptor;
+    } catch (e) {
+      debugPrint("⚠️ Error creating 3D car marker bitmap: $e");
+      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
+    }
   }
 
   /// تحميل مسبق للأيقونات الشائعة في الذاكرة لمنع أي Flickering عند فتح الخرائط
   static Future<void> preloadCommonMarkers() async {
-    // تحميل أيقونة البداية (دائرة خضراء)
-    await createCircleMarkerBitmap(Colors.green, isSquare: false);
-    // تحميل أيقونة النهاية (مربع أحمر)
-    await createCircleMarkerBitmap(Colors.red, isSquare: true);
-    // تحميل أيقونة الدرايفر (سيارة وموتوسيكل)
-    await createVehicleMarkerBitmap(isMotorcycle: false);
-    await createVehicleMarkerBitmap(isMotorcycle: true);
-    await create3DCarMarkerBitmap();
+    try {
+      await createCircleMarkerBitmap(Colors.green, isSquare: false);
+      await createCircleMarkerBitmap(Colors.red, isSquare: true);
+      await createVehicleMarkerBitmap(isMotorcycle: false);
+      await createVehicleMarkerBitmap(isMotorcycle: true);
+      await create3DCarMarkerBitmap();
+    } catch (e) {
+      debugPrint("⚠️ Error preloading common map markers: $e");
+    }
   }
 }
