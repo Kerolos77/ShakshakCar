@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shakshak/features/shared/base_layout/presentation/view_models/drawer_cubit/drawer_cubit.dart';
 import 'package:shakshak/generated/l10n.dart';
 
+import 'package:shakshak/core/router/app_router.dart';
 import 'package:shakshak/core/router/router_helper.dart';
 import 'package:shakshak/core/router/routes.dart';
 import 'custom_drawer_item.dart';
@@ -54,14 +55,15 @@ class UserDrawerListItems extends StatelessWidget {
           icon: Icons.local_shipping_rounded,
           isSelected: selectedIndex == 11,
           onTap: () async {
-            Scaffold.of(context).closeDrawer();
-            
+            Navigator.pop(context); // Close the drawer route first
+
             showDialog(
-              context: context,
+              context: AppRouter.globalContext,
               barrierDismissible: false,
-              builder: (context) => const Center(child: CircularProgressIndicator()),
+              builder: (_) =>
+                  const Center(child: CircularProgressIndicator()),
             );
-            
+
             bool isVerified = false;
             try {
               final token = CacheHelper.getData(key: AppConstant.kToken);
@@ -69,26 +71,28 @@ class UserDrawerListItems extends StatelessWidget {
                 url: 'user/identity-status',
                 token: token,
               );
-              
-              if (response.statusCode == 200 && response.data != null) {
-                 final resData = response.data['data'];
-                 if (resData != null && resData['verification_status'] == 'verified') {
-                   isVerified = true;
-                 }
+
+              if (response != null &&
+                  response.statusCode == 200 &&
+                  response.data != null) {
+                final resData = response.data['data'];
+                if (resData != null &&
+                    resData['verification_status'] == 'verified') {
+                  isVerified = true;
+                }
               }
             } catch (e) {
               // Ignore API error
             }
-            
-            // ignore: use_build_context_synchronously
-            Navigator.pop(context); // hide loading
-            
+
+            if (canPop()) {
+              navigatePop(null); // hide loading
+            }
+
             if (isVerified) {
-              // ignore: use_build_context_synchronously
-              navigateTo(context, Routes.shipmentRequestView);
+              navigateTo(null, Routes.shipmentRequestView);
             } else {
-              // ignore: use_build_context_synchronously
-              navigateTo(context, Routes.userIdentityVerificationView);
+              navigateTo(null, Routes.userIdentityVerificationView);
             }
           },
         ),
