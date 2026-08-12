@@ -586,8 +586,7 @@ class _BookRideState extends State<BookRide> {
                   );
                   navigateAndFinish(
                     context,
-                    Routes.offersView,
-                    extra: OffersViewArgs(newRideData: newRideData),
+                    Routes.userHomeView,
                   );
                 }
               } else if (state is VerifyReceiverOtpFailure) {
