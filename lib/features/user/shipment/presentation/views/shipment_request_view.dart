@@ -767,8 +767,7 @@ class _ShipmentRequestViewState extends State<ShipmentRequestView> {
                   );
                   navigateAndFinish(
                     context,
-                    Routes.offersView,
-                    extra: OffersViewArgs(newRideData: newRideData),
+                    Routes.userHomeView,
                   );
                 }
               } else if (state is VerifyReceiverOtpFailure) {
