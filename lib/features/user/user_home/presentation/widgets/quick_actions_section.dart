@@ -92,9 +92,9 @@ class QuickActionsSection extends StatelessWidget {
 
   void _handleShipmentTap(BuildContext context) async {
     showDialog(
-      context: context,
+      context: AppRouter.globalContext,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
     
     bool isVerified = false;
@@ -105,7 +105,7 @@ class QuickActionsSection extends StatelessWidget {
         token: token,
       );
       
-      if (response.statusCode == 200 && response.data != null) {
+      if (response != null && response.statusCode == 200 && response.data != null) {
          final resData = response.data['data'];
          if (resData != null && resData['verification_status'] == 'verified') {
            isVerified = true;
@@ -115,17 +115,16 @@ class QuickActionsSection extends StatelessWidget {
       // Ignore API error and fallback to not verified
     }
     
-    // ignore: use_build_context_synchronously
-    Navigator.pop(context); // hide loading
+    if (canPop()) {
+      navigatePop(null); // hide loading
+    }
     
     if (isVerified) {
       // Navigate to Shipment Request Screen
-      // ignore: use_build_context_synchronously
-      navigateTo(context, Routes.shipmentRequestView);
+      navigateTo(null, Routes.shipmentRequestView);
     } else {
       // Navigate to Verification View directly
-      // ignore: use_build_context_synchronously
-      navigateTo(context, Routes.userIdentityVerificationView);
+      navigateTo(null, Routes.userIdentityVerificationView);
     }
   }
 
